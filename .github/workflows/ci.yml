@@ -4,7 +4,7 @@ name: Gemini CLI CI
 
 on:
   push:
-    branches: [main, release]
+    branches: [release]  # 暂时禁用main分支的CI
   pull_request:
     branches: [main, release]
   merge_group:

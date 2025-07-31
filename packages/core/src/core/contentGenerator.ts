@@ -191,11 +191,9 @@ export async function createContentGenerator(
       generateContent: async () => {
         throw new Error('Direct content generation not supported for this provider. Use AIClient instead.');
       },
-      generateContentStream: async () => {
-        return (async function* () {
+      generateContentStream: async () => (async function* () {
           throw new Error('Direct content generation not supported for this provider. Use AIClient instead.');
-        })();
-      },
+        })(),
       countTokens: async () => {
         throw new Error('Token counting not supported for this provider.');
       },

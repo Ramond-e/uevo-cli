@@ -215,7 +215,7 @@ export class SmartAIClient {
           model,
         };
         
-        console.log('[SmartAI] 创建AI客户端配置:', { provider: provider, model });
+        console.log('[SmartAI] 创建AI客户端配置:', { provider, model });
         const aiClient = AIClientFactory.create(clientConfig, self.config);
         
         // 转换查询格式

@@ -6,8 +6,7 @@
 
 import { SlashCommand, MessageActionReturn, CommandKind } from './types.js';
 
-const testTodoAction = async (): Promise<MessageActionReturn> => {
-  return {
+const testTodoAction = async (): Promise<MessageActionReturn> => ({
     type: 'message',
     messageType: 'info',
     content: `🧪 测试TODO信号功能
@@ -34,8 +33,7 @@ const testTodoAction = async (): Promise<MessageActionReturn> => {
 1. 确保您当前有活跃的TODO列表
 2. 信号检测会在底部显示调试信息
 3. TODO列表应该实时更新状态圆圈`
-  };
-};
+  });
 
 export const testTodoCommand: SlashCommand = {
   name: 'test-todo',

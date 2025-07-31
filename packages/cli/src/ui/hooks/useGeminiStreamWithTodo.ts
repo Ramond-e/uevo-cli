@@ -8,12 +8,12 @@ import { useCallback, useEffect } from 'react';
 import { useGeminiStream } from './useGeminiStream.js';
 import { useTodoIntegration } from './useTodoIntegration.js';
 import { UseTodoManagerReturn } from './useTodoManager.js';
-import { GeminiClient, Config } from '@uevo/uevo-cli-core';
-import { HistoryItem, StreamingState } from '../types.js';
+import { GeminiClient, Config , EditorType } from '@uevo/uevo-cli-core';
+import { HistoryItem, StreamingState , SlashCommandProcessorResult } from '../types.js';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
-import { SlashCommandProcessorResult } from '../types.js';
+
 import { PartListUnion } from '@google/genai';
-import { EditorType } from '@uevo/uevo-cli-core';
+
 
 interface UseGeminiStreamWithTodoProps {
   geminiClient: GeminiClient;

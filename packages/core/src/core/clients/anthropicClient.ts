@@ -35,7 +35,7 @@ interface AnthropicStreamEvent {
     id: string;
     type: string;
     role: string;
-    content: Array<any>;
+    content: any[];
     model: string;
     stop_reason: string | null;
     stop_sequence: string | null;

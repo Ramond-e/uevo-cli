@@ -6,8 +6,7 @@
 
 import { SlashCommand, MessageActionReturn, CommandKind } from './types.js';
 
-const debugTodoAction = async (): Promise<MessageActionReturn> => {
-  return {
+const debugTodoAction = async (): Promise<MessageActionReturn> => ({
     type: 'message',
     messageType: 'info',
     content: `📋 调试TODO功能
@@ -31,8 +30,7 @@ const debugTodoAction = async (): Promise<MessageActionReturn> => {
 - "正在分析任务，生成TODO列表..."提示
 - 蓝绿色渐变的TODO列表框
 - 任务项目和进度统计`
-  };
-};
+  });
 
 export const debugTodoCommand: SlashCommand = {
   name: 'debug-todo',

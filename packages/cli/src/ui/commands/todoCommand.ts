@@ -5,7 +5,7 @@
  */
 
 import { SlashCommand, MessageActionReturn, CommandKind, CommandContext } from './types.js';
-import { TodoStatus } from '../types/todo.js';
+// import { TodoStatus } from '../types/todo.js';
 
 const todoCompleteAction = async (context: CommandContext, args: string): Promise<MessageActionReturn> => {
   const todoId = parseInt(args.trim(), 10);
@@ -34,8 +34,7 @@ const todoCompleteAction = async (context: CommandContext, args: string): Promis
   };
 };
 
-const todoShowAction = async (): Promise<MessageActionReturn> => {
-  return {
+const todoShowAction = async (): Promise<MessageActionReturn> => ({
     type: 'message',
     messageType: 'info',
     content: `📋 TODO管理命令
@@ -51,8 +50,7 @@ const todoShowAction = async (): Promise<MessageActionReturn> => {
 信号格式：
 • 完成："todo事项1已经完成" 或 "TODO 1 completed"  
 • 开始："开始执行todo事项1" 或 "Starting TODO 1"`
-  };
-};
+  });
 
 export const todoCommand: SlashCommand = {
   name: 'todo',
