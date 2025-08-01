@@ -2,7 +2,21 @@
 
 如果您在bash终端中无法直接使用 `uevo` 命令，请使用以下解决方案：
 
-## 方案1：使用启动脚本（推荐）
+## 方案1：使用npm link（推荐）
+
+从源码构建后，需要创建全局命令链接：
+
+```bash
+cd uevo-cli/packages/cli
+npm link
+```
+
+然后就可以在任何位置使用：
+```bash
+uevo
+```
+
+## 方案2：使用启动脚本
 
 1. 给脚本添加执行权限：
 ```bash
@@ -19,13 +33,13 @@ chmod +x uevo.sh
 /e/IDEProjects/AI/uevo/uevo.sh
 ```
 
-## 方案2：直接使用node命令
+## 方案3：直接使用node命令
 
 ```bash
 node /e/IDEProjects/AI/uevo/packages/cli/dist/index.js
 ```
 
-## 方案3：设置PATH环境变量
+## 方案4：设置PATH环境变量
 
 在您的 `~/.bashrc` 或 `~/.bash_profile` 中添加：
 
@@ -42,7 +56,7 @@ alias uevo='node /e/IDEProjects/AI/uevo/packages/cli/dist/index.js'
 source ~/.bashrc
 ```
 
-## 方案4：使用npx（如果可用）
+## 方案5：使用npx（如果可用）
 
 ```bash
 npx @uevo/uevo-cli

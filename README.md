@@ -60,7 +60,13 @@ git clone https://github.com/AstreoX/uevo-cli.git
 cd uevo-cli
 npm install
 npm run build
-npm start
+cd packages/cli
+npm link
+```
+
+构建完成后，您可以在任何位置使用`uevo`命令：
+```bash
+uevo
 ```
 
 ### ⚙️ 环境配置
