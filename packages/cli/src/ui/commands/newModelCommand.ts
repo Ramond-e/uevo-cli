@@ -25,7 +25,7 @@ const RESET_COLOR = '\u001b[0m';
 const MODEL_GROUPS = {
   gemini: {
     name: 'Gemini',
-    envVar: 'UEVO_API_KEY',
+          envVar: 'GEMINI_API_KEY',
     models: [
       'gemini-1.5-pro',
       'gemini-1.5-flash',

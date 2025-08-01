@@ -155,7 +155,7 @@ describe('loadCliConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    process.env.UEVO_API_KEY = 'test-api-key'; // Ensure API key is set for tests
+    process.env.GEMINI_API_KEY = 'test-api-key'; // Ensure API key is set for tests
   });
 
   afterEach(() => {
@@ -271,7 +271,7 @@ describe('loadCliConfig telemetry', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    process.env.UEVO_API_KEY = 'test-api-key';
+    process.env.GEMINI_API_KEY = 'test-api-key';
   });
 
   afterEach(() => {
@@ -728,7 +728,7 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    process.env.UEVO_API_KEY = 'test-api-key';
+    process.env.GEMINI_API_KEY = 'test-api-key';
   });
 
   afterEach(() => {
@@ -916,7 +916,7 @@ describe('loadCliConfig ideMode', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    process.env.UEVO_API_KEY = 'test-api-key';
+    process.env.GEMINI_API_KEY = 'test-api-key';
     // Explicitly delete TERM_PROGRAM and SANDBOX before each test
     delete process.env.TERM_PROGRAM;
     delete process.env.SANDBOX;

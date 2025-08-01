@@ -73,7 +73,7 @@ uevo
 
 1. **设置API密钥**（选择一个或多个）：
    ```bash
-   export UEVO_API_KEY="your-gemini-api-key"          # Google Gemini
+   export GEMINI_API_KEY="your-gemini-api-key"          # Google Gemini
    export DEEPSEEK_API_KEY="your-deepseek-api-key"    # DeepSeek
    export ANTHROPIC_API_KEY="your-claude-api-key"     # Anthropic Claude
    export OPENAI_API_KEY="your-openai-api-key"        # OpenAI GPT

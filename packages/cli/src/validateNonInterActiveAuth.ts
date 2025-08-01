@@ -16,13 +16,13 @@ export async function validateNonInteractiveAuth(
     configuredAuthType ||
     (process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true'
       ? AuthType.USE_VERTEX_AI
-      : process.env.UEVO_API_KEY
+      : process.env.GEMINI_API_KEY
         ? AuthType.USE_GEMINI
         : undefined);
 
   if (!effectiveAuthType) {
     console.error(
-      `Please set an Auth method in your ${USER_SETTINGS_PATH} or specify either the UEVO_API_KEY or GOOGLE_GENAI_USE_VERTEXAI environment variables before running`,
+      `Please set an Auth method in your ${USER_SETTINGS_PATH} or specify either the GEMINI_API_KEY or GOOGLE_GENAI_USE_VERTEXAI environment variables before running`,
     );
     process.exit(1);
   }

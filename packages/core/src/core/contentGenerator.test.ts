@@ -84,8 +84,8 @@ describe('createContentGeneratorConfig', () => {
     process.env = originalEnv;
   });
 
-  it('should configure for Gemini using UEVO_API_KEY when set', async () => {
-    process.env.UEVO_API_KEY = 'env-gemini-key';
+  it('should configure for Gemini using GEMINI_API_KEY when set', async () => {
+    process.env.GEMINI_API_KEY = 'env-gemini-key';
     const config = await createContentGeneratorConfig(
       mockConfig,
       AuthType.USE_GEMINI,
@@ -94,8 +94,8 @@ describe('createContentGeneratorConfig', () => {
     expect(config.vertexai).toBe(false);
   });
 
-  it('should not configure for Gemini if UEVO_API_KEY is empty', async () => {
-    process.env.UEVO_API_KEY = '';
+  it('should not configure for Gemini if GEMINI_API_KEY is empty', async () => {
+    process.env.GEMINI_API_KEY = '';
     const config = await createContentGeneratorConfig(
       mockConfig,
       AuthType.USE_GEMINI,

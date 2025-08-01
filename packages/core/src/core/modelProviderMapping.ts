@@ -148,7 +148,7 @@ export function getProviderForModel(modelName: string): AIProvider {
  */
 export function getEnvVarForProvider(provider: AIProvider): string {
   const envVarMap: Record<AIProvider, string> = {
-    [AIProvider.GEMINI]: 'UEVO_API_KEY',
+    [AIProvider.GEMINI]: 'GEMINI_API_KEY',
     [AIProvider.DEEPSEEK]: 'DEEPSEEK_API_KEY',
     [AIProvider.ANTHROPIC]: 'ANTHROPIC_API_KEY',
     [AIProvider.OPENAI]: 'OPENAI_API_KEY',

@@ -39,7 +39,7 @@ describe('Configuration Integration Tests', () => {
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(tmpdir(), 'uevo-cli-test-'));
     originalEnv = { ...process.env };
-    process.env.UEVO_API_KEY = 'test-api-key';
+    process.env.GEMINI_API_KEY = 'test-api-key';
     vi.clearAllMocks();
   });
 

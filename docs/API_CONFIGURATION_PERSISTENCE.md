@@ -13,7 +13,7 @@ uEVO CLI 的 API 配置采用了混合持久化策略，以确保安全性和易
 
 ### 2. 环境变量（需要手动配置）
 出于安全考虑，API 密钥等敏感信息**不会**保存在设置文件中，需要通过环境变量提供：
-- `UEVO_API_KEY` - Gemini API
+- `GEMINI_API_KEY` - Gemini API
 - `DEEPSEEK_API_KEY` - DeepSeek API
 - `DASHSCOPE_API_KEY` - Alibaba Cloud DashScope
 - `ANTHROPIC_API_KEY` - Anthropic Claude API

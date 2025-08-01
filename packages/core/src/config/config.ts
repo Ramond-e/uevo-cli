@@ -677,8 +677,8 @@ export class Config {
       // 如果映射模块加载失败，返回默认的Gemini信息
       return {
         provider: 'gemini',
-        envVar: 'UEVO_API_KEY',
-        isConfigured: !!process.env.UEVO_API_KEY,
+              envVar: 'GEMINI_API_KEY',
+      isConfigured: !!process.env.GEMINI_API_KEY,
         providerName: 'Google Gemini',
       };
     }

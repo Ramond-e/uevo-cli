@@ -73,7 +73,7 @@ uevo
 | deepseek-chat, deepseek-reasoner | DeepSeek | DEEPSEEK_API_KEY |
 | claude-3-5-sonnet-* | Anthropic | ANTHROPIC_API_KEY |
 | gpt-4o, gpt-3.5-turbo | OpenAI | OPENAI_API_KEY |
-| gemini-1.5-pro, gemini-2.5-pro | Google | UEVO_API_KEY |
+| gemini-1.5-pro, gemini-2.5-pro | Google | GEMINI_API_KEY |
 
 ## 故障排除
 

@@ -61,7 +61,7 @@ $env:DASHSCOPE_API_KEY="你的阿里云API密钥"
 - 获取密钥：https://console.anthropic.com/
 
 ### Gemini
-- 环境变量：`UEVO_API_KEY`
+- 环境变量：`GEMINI_API_KEY`
 - 获取密钥：https://ai.google.dev
 
 ### OpenRouter

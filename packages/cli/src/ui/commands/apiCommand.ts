@@ -24,7 +24,7 @@ const RESET_COLOR = '\u001b[0m';
 const API_PROVIDERS = {
   gemini: {
     name: 'Gemini',
-    envVar: 'UEVO_API_KEY',
+          envVar: 'GEMINI_API_KEY',
     description: 'Google Gemini API',
     setupUrl: 'https://ai.google.dev/api',
   },

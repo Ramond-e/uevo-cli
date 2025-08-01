@@ -33,14 +33,14 @@ describe('validateAuthMethod', () => {
   });
 
   describe('USE_GEMINI', () => {
-    it('should return null if UEVO_API_KEY is set', () => {
-      process.env.UEVO_API_KEY = 'test-key';
+    it('should return null if GEMINI_API_KEY is set', () => {
+      process.env.GEMINI_API_KEY = 'test-key';
       expect(validateAuthMethod(AuthType.USE_GEMINI)).toBeNull();
     });
 
-    it('should return an error message if UEVO_API_KEY is not set', () => {
+    it('should return an error message if GEMINI_API_KEY is not set', () => {
       expect(validateAuthMethod(AuthType.USE_GEMINI)).toBe(
-        'UEVO_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
+        'GEMINI_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
       );
     });
   });
@@ -60,8 +60,8 @@ describe('validateAuthMethod', () => {
     it('should return an error message if no required environment variables are set', () => {
       expect(validateAuthMethod(AuthType.USE_VERTEX_AI)).toBe(
         'When using Vertex AI, you must specify either:\n' +
-          'â€?GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION environment variables.\n' +
-          'â€?GOOGLE_API_KEY environment variable (if using express mode).\n' +
+          'ï¿½?GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION environment variables.\n' +
+          'ï¿½?GOOGLE_API_KEY environment variable (if using express mode).\n' +
           'Update your environment and try again (no reload needed if using .env)!',
       );
     });
