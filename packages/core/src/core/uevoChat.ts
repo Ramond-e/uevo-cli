@@ -761,7 +761,7 @@ export class GeminiChat {
       parameters: {
         result_format: 'message',
         temperature: config.temperature || 1.0,
-        max_tokens: config.maxOutputTokens,
+        max_tokens: config.maxOutputTokens || 2048,  // 修复：设置默认值
       },
     };
 
@@ -836,8 +836,8 @@ export class GeminiChat {
       parameters: {
         result_format: 'message',
         temperature: config.temperature || 1.0,
-        max_tokens: config.maxOutputTokens,
-        incremental_output: true,
+        max_tokens: config.maxOutputTokens || 2048,  // 修复：设置默认值
+        incremental_output: true,   // 修复：阿里云流式API需要设置为true
       },
     };
 
@@ -882,43 +882,56 @@ export class GeminiChat {
           if (line.startsWith('data:')) {
             try {
               const jsonStr = line.slice(5).trim();
+              console.log('[Aliyun Debug] 收到数据:', jsonStr);
+              
               if (jsonStr === '[DONE]') {
+                console.log('[Aliyun Debug] 收到结束信号');
                 return;
               }
 
               const data = JSON.parse(jsonStr);
+              console.log('[Aliyun Debug] 解析后的数据:', JSON.stringify(data, null, 2));
               
               if (data.output?.choices && data.output.choices.length > 0) {
                 const choice = data.output.choices[0];
+                console.log('[Aliyun Debug] Choice内容:', choice.message?.content);
+                console.log('[Aliyun Debug] Finish reason:', choice.finish_reason);
+                
                 if (choice.message?.content) {
-                  yield {
-                    candidates: [{
-                      content: {
-                        parts: [{ text: choice.message.content }],
-                        role: 'model'
+                  const content = choice.message.content.trim();
+                  if (content.length > 0) {
+                    console.log('[Aliyun Debug] 输出内容:', content);
+                    yield {
+                      candidates: [{
+                        content: {
+                          parts: [{ text: content }],
+                          role: 'model'
+                        },
+                        index: 0,
+                        finishReason: choice.finish_reason === 'stop' ? FinishReason.STOP : undefined,
+                        safetyRatings: []
+                      }],
+                      promptFeedback: {
+                        safetyRatings: []
                       },
-                      index: 0,
-                      finishReason: choice.finish_reason === 'stop' ? FinishReason.STOP : undefined,
-                      safetyRatings: []
-                    }],
-                    promptFeedback: {
-                      safetyRatings: []
-                    },
-                    usageMetadata: data.usage ? {
-                      promptTokenCount: data.usage.input_tokens,
-                      candidatesTokenCount: data.usage.output_tokens,
-                      totalTokenCount: data.usage.total_tokens,
-                    } : totalUsage,
-                    modelVersion: model,
-                    text: undefined,
-                    data: undefined,
-                    functionCalls: undefined,
-                    executableCode: undefined,
-                    codeExecutionResult: undefined,
-                  };
+                      usageMetadata: data.usage ? {
+                        promptTokenCount: data.usage.input_tokens,
+                        candidatesTokenCount: data.usage.output_tokens,
+                        totalTokenCount: data.usage.total_tokens,
+                      } : totalUsage,
+                      modelVersion: model,
+                      text: undefined,
+                      data: undefined,
+                      functionCalls: undefined,
+                      executableCode: undefined,
+                      codeExecutionResult: undefined,
+                    };
+                  }
                 }
                 
-                if (choice.finish_reason) {
+                // 修复：只有在真正完成时才返回
+                if (choice.finish_reason === 'stop') {
+                  console.log('[Aliyun Debug] 流正常结束');
                   return;
                 }
               }

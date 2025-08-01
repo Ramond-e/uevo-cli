@@ -113,7 +113,7 @@ export class AliyunClient extends AIClient {
         result_format: 'message',
         temperature: this.config.temperature || 1.0,
         max_tokens: this.config.maxTokens,
-        incremental_output: true,
+        incremental_output: false,  // 修复：设置为false以避免增量输出问题
       },
     }, true);
 
@@ -157,15 +157,20 @@ export class AliyunClient extends AIClient {
               if (data.output?.choices && data.output.choices.length > 0) {
                 const choice = data.output.choices[0];
                 if (choice.message?.content) {
-                  yield { type: 'content', content: choice.message.content };
+                  // 修复：确保内容不为空且有意义
+                  const content = choice.message.content.trim();
+                  if (content.length > 0) {
+                    yield { type: 'content', content };
+                  }
                 }
-                if (choice.finish_reason) {
+                if (choice.finish_reason && choice.finish_reason !== 'null') {
                   yield { type: 'done' };
                   return;
                 }
               }
             } catch (e) {
-              console.warn('Failed to parse Aliyun stream chunk:', line);
+              console.warn('Failed to parse Aliyun stream chunk:', line, 'Error:', e);
+              // 继续处理下一个chunk，不要中断流
             }
           }
         }
@@ -224,17 +229,45 @@ export class AliyunClient extends AIClient {
     if (stream) {
       headers['Accept'] = 'text/event-stream';
       headers['Cache-Control'] = 'no-cache';
+      headers['Connection'] = 'keep-alive';
     }
 
     const options: RequestInit = {
       method: body ? 'POST' : 'GET',
       headers,
+      // 添加超时控制
+      signal: AbortSignal.timeout(stream ? 60000 : 30000), // 流式60秒，非流式30秒
     };
 
     if (body) {
       options.body = JSON.stringify(body);
     }
 
-    return fetch(url, options);
+    try {
+      const response = await fetch(url, options);
+      
+      // 检查API密钥是否有效
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your DASHSCOPE_API_KEY.');
+      }
+      
+      // 检查模型是否支持
+      if (response.status === 400) {
+        const errorText = await response.text();
+        if (errorText.includes('model')) {
+          throw new Error(`Model ${this.config.model} is not supported or available.`);
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Request timeout. The API response took too long.');
+        }
+        throw error;
+      }
+      throw new Error('Unknown error occurred while making request.');
+    }
   }
 }
