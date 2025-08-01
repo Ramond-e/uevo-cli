@@ -47,6 +47,7 @@ import { ideContext } from '../services/ideContext.js';
 import { logFlashDecidedToContinue } from '../telemetry/loggers.js';
 import { FlashDecidedToContinueEvent } from '../telemetry/types.js';
 import { getProviderForModel, AIProvider } from './modelProviderMapping.js';
+import { AnthropicClient } from './anthropicClient.js';
 
 function isThinkingSupported(model: string) {
   if (model.startsWith('gemini-2.5')) return true;
@@ -151,6 +152,7 @@ export class GeminiClient {
 
   private readonly loopDetector: LoopDetectionService;
   private lastPromptId?: string;
+  private anthropicClient?: AnthropicClient;
 
   constructor(private config: Config) {
     if (config.getProxy()) {
@@ -168,6 +170,12 @@ export class GeminiClient {
       this.config.getSessionId(),
     );
     this.chat = await this.startChat();
+    
+    // 初始化AnthropicClient（如果配置了API密钥）
+    if (this.config.getAnthropicApiKey()) {
+      this.anthropicClient = new AnthropicClient(this.config);
+      await this.anthropicClient.initialize();
+    }
   }
 
   getContentGenerator(): ContentGenerator {
@@ -194,6 +202,107 @@ export class GeminiClient {
 
   isInitialized(): boolean {
     return this.chat !== undefined && this.contentGenerator !== undefined;
+  }
+
+  /**
+   * 获取AnthropicClient实例
+   */
+  getAnthropicClient(): AnthropicClient | undefined {
+    return this.anthropicClient;
+  }
+
+  /**
+   * 检查是否支持Claude模型
+   */
+  supportsClaudeModels(): boolean {
+    return this.anthropicClient !== undefined;
+  }
+
+  /**
+   * 处理Claude模型请求
+   */
+  private async *handleClaudeRequest(
+    request: PartListUnion,
+    signal: AbortSignal,
+    prompt_id: string,
+    model: string,
+  ): AsyncGenerator<ServerGeminiStreamEvent, void> {
+    if (!this.anthropicClient) {
+      yield {
+        type: GeminiEventType.Error,
+        value: {
+          error: {
+            message: 'AnthropicClient not initialized',
+          },
+        },
+      };
+      return;
+    }
+
+    try {
+      // 将Gemini格式的请求转换为文本
+      const userMessage = this.convertGeminiRequestToText(request);
+      
+      // 使用AnthropicClient流式发送消息
+      const stream = this.anthropicClient.streamMessage(userMessage, model, {
+        maxTokens: 4096,
+        temperature: this.generateContentConfig.temperature || 0.1,
+        prompt_id: prompt_id,
+      });
+
+      for await (const event of stream) {
+        if (signal.aborted) {
+          break;
+        }
+        yield event;
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      yield {
+        type: GeminiEventType.Error,
+        value: {
+          error: {
+            message: `Claude API调用失败: ${errorMessage}`,
+          },
+        },
+      };
+    }
+  }
+
+  /**
+   * 将Gemini格式的请求转换为文本
+   */
+  private convertGeminiRequestToText(request: PartListUnion): string {
+    if (typeof request === 'string') {
+      return request;
+    }
+
+    if (Array.isArray(request)) {
+      return request
+        .map((part) => {
+          if (typeof part === 'string') {
+            return part;
+          }
+          if (part.text) {
+            return part.text;
+          }
+          if (part.inlineData) {
+            return '[Image or file content]';
+          }
+          return JSON.stringify(part);
+        })
+        .join('\n');
+    }
+
+    if (request.text) {
+      return request.text;
+    }
+
+    if (request.inlineData) {
+      return '[Image or file content]';
+    }
+
+    return JSON.stringify(request);
   }
 
   getHistory(): Content[] {
@@ -336,6 +445,26 @@ export class GeminiClient {
     turns: number = this.MAX_TURNS,
     originalModel?: string,
   ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
+    // 检查是否使用Claude模型
+    const currentModel = this.config.getModel();
+    if (AnthropicClient.isClaudeModel(currentModel)) {
+      if (!this.anthropicClient) {
+        yield {
+          type: GeminiEventType.Error,
+          value: {
+            error: {
+              message: 'Claude模型已选择，但Anthropic API密钥未配置。请设置ANTHROPIC_API_KEY环境变量。',
+            },
+          },
+        };
+        return new Turn(this.getChat(), prompt_id);
+      }
+      
+      // 使用AnthropicClient处理Claude模型请求
+      yield* this.handleClaudeRequest(request, signal, prompt_id, currentModel);
+      return new Turn(this.getChat(), prompt_id);
+    }
+
     if (this.lastPromptId !== prompt_id) {
       this.loopDetector.reset(prompt_id);
       this.lastPromptId = prompt_id;

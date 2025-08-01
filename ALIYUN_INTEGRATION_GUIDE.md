@@ -59,7 +59,15 @@
 export DASHSCOPE_API_KEY="your-dashscope-api-key"
 ```
 
-### 3. 使用示例
+### 3. 配置认证方式
+
+在 uEVO CLI 启动时，选择 "Use Aliyun DashScope API Key" 认证选项，或者通过命令行设置：
+
+```bash
+uevo auth aliyun-api-key
+```
+
+### 4. 使用示例
 
 #### 命令行使用
 ```bash

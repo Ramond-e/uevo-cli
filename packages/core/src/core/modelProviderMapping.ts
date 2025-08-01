@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AIProvider } from './aiClient.js';
+import { AIProvider } from './aiProvider.js';
 
 // 重新导出AIProvider以便其他模块使用
 export { AIProvider };
@@ -32,12 +32,30 @@ export const MODEL_PROVIDER_MAPPING: Record<string, AIProvider> = {
   'deepseek-r1': AIProvider.DEEPSEEK,
 
   // Anthropic 模型
+  // Claude 4 Models (Latest Generation)
+  'claude-opus-4-20250514': AIProvider.ANTHROPIC,
+  'claude-opus-4-0': AIProvider.ANTHROPIC,
+  'claude-sonnet-4-20250514': AIProvider.ANTHROPIC,
+  'claude-sonnet-4-0': AIProvider.ANTHROPIC,
+  
+  // Claude 3.7 Models
+  'claude-3-7-sonnet-20250219': AIProvider.ANTHROPIC,
+  'claude-3-7-sonnet-latest': AIProvider.ANTHROPIC,
+  
+  // Claude 3.5 Models
   'claude-3-5-sonnet-20241022': AIProvider.ANTHROPIC,
+  'claude-3-5-sonnet-latest': AIProvider.ANTHROPIC,
   'claude-3-5-sonnet-20240620': AIProvider.ANTHROPIC,
   'claude-3-5-haiku-20241022': AIProvider.ANTHROPIC,
+  'claude-3-5-haiku-latest': AIProvider.ANTHROPIC,
+  
+  // Claude 3 Models
   'claude-3-opus-20240229': AIProvider.ANTHROPIC,
+  'claude-3-opus-latest': AIProvider.ANTHROPIC,
   'claude-3-sonnet-20240229': AIProvider.ANTHROPIC,
   'claude-3-haiku-20240307': AIProvider.ANTHROPIC,
+  
+  // Legacy Claude Models
   'claude-2.1': AIProvider.ANTHROPIC,
   'claude-2.0': AIProvider.ANTHROPIC,
   'claude-instant-1.2': AIProvider.ANTHROPIC,

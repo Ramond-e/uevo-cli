@@ -18,6 +18,7 @@ import { GrepTool } from '../tools/grep.js';
 import { GlobTool } from '../tools/glob.js';
 import { EditTool } from '../tools/edit.js';
 import { ShellTool } from '../tools/shell.js';
+import { ClaudeShellTool } from '../tools/claudeShell.js';
 import { WriteFileTool } from '../tools/write-file.js';
 import { WebFetchTool } from '../tools/web-fetch.js';
 import { ReadManyFilesTool } from '../tools/read-many-files.js';
@@ -177,6 +178,7 @@ export interface ConfigParameters {
   noBrowser?: boolean;
   summarizeToolOutput?: Record<string, SummarizeToolOutputSettings>;
   ideMode?: boolean;
+  anthropicApiKey?: string;
 }
 
 export class Config {
@@ -232,6 +234,7 @@ export class Config {
     | Record<string, SummarizeToolOutputSettings>
     | undefined;
   private readonly experimentalAcp: boolean = false;
+  private readonly anthropicApiKey: string | undefined;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -283,6 +286,7 @@ export class Config {
     this.noBrowser = params.noBrowser ?? false;
     this.summarizeToolOutput = params.summarizeToolOutput;
     this.ideMode = params.ideMode ?? false;
+    this.anthropicApiKey = params.anthropicApiKey;
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -347,6 +351,14 @@ export class Config {
     if (this.contentGeneratorConfig) {
       this.contentGeneratorConfig.model = newModel;
       this.modelSwitchedDuringSession = true;
+      
+      // 重新初始化工具注册表以适应新模型
+      this.createToolRegistry().then(registry => {
+        this.toolRegistry = registry;
+        console.log(`[Config] 模型切换到 ${newModel}，工具注册表已重新初始化`);
+      }).catch(error => {
+        console.error(`[Config] 重新初始化工具注册表失败:`, error);
+      });
     }
   }
 
@@ -627,7 +639,19 @@ export class Config {
     registerCoreTool(WriteFileTool, this);
     registerCoreTool(WebFetchTool, this);
     registerCoreTool(ReadManyFilesTool, this);
-    registerCoreTool(ShellTool, this);
+    
+    // 根据模型类型选择不同的shell工具
+    const currentModel = this.getModel();
+    const isClaudeModel = currentModel && currentModel.toLowerCase().includes('claude');
+    
+    if (isClaudeModel) {
+      console.log(`[Config] 检测到Claude模型 (${currentModel})，使用Claude专用Shell工具`);
+      registerCoreTool(ClaudeShellTool, this);
+    } else {
+      console.log(`[Config] 检测到非Claude模型 (${currentModel})，使用标准Shell工具`);
+      registerCoreTool(ShellTool, this);
+    }
+    
     registerCoreTool(MemoryTool);
     registerCoreTool(WebSearchTool, this);
 
@@ -662,7 +686,7 @@ export class Config {
     return this.getAIClient();
   }
 
-  /**
+    /**
    * 获取模型的详细信息，包括提供商和配置状态
    */
   getModelInfo(modelName: string = this.getModel()): {
@@ -677,11 +701,18 @@ export class Config {
       // 如果映射模块加载失败，返回默认的Gemini信息
       return {
         provider: 'gemini',
-              envVar: 'GEMINI_API_KEY',
-      isConfigured: !!process.env.GEMINI_API_KEY,
+            envVar: 'GEMINI_API_KEY',
+    isConfigured: !!process.env.GEMINI_API_KEY,
         providerName: 'Google Gemini',
       };
     }
+  }
+
+  /**
+   * 获取Anthropic API密钥
+   */
+  getAnthropicApiKey(): string | undefined {
+    return this.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
   }
 
   private geminiClient?: GeminiClient;

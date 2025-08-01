@@ -18,8 +18,8 @@ export * from './core/turn.js';
 export * from './core/geminiRequest.js';
 export * from './core/coreToolScheduler.js';
 export * from './core/nonInteractiveToolExecutor.js';
-export * from './core/aiClient.js';
-export * from './core/aiClientFactory.js';
+export * from './core/aiProvider.js';
+export * from './core/anthropicClient.js';
 export * from './core/modelProviderMapping.js';
 
 export * from './code_assist/codeAssist.js';

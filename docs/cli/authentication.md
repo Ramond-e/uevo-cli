@@ -1,6 +1,6 @@
 # Authentication Setup
 
-The Gemini CLI requires you to authenticate with Google's AI services. On initial startup you'll need to configure **one** of the following authentication methods:
+The uEVO CLI supports multiple AI providers and authentication methods. On initial startup you'll need to configure **one** of the following authentication methods:
 
 1.  **Login with Google (Gemini Code Assist):**
     - Use this option to log in with your google account.
@@ -13,6 +13,17 @@ The Gemini CLI requires you to authenticate with Google's AI services. On initia
       1. You are using the product outside the [supported regions](https://developers.google.com/gemini-code-assist/resources/available-locations) for free individual usage.
       1. You are a Google account holder under the age of 18
       - If you fall into one of these categories, you must first configure a Google Cloud Project ID to use, [enable the Gemini for Cloud API](https://cloud.google.com/gemini/docs/discover/set-up-gemini#enable-api) and [configure access permissions](https://cloud.google.com/gemini/docs/discover/set-up-gemini#grant-iam).
+
+4. **Use Aliyun DashScope API Key:**
+   - Use this option to authenticate with Aliyun's DashScope API for accessing Qwen models.
+   - You'll need to obtain a DashScope API key from the [Aliyun DashScope Console](https://dashscope.console.aliyun.com/).
+   - Set the `DASHSCOPE_API_KEY` environment variable with your API key.
+   - This method provides access to all Qwen models including Qwen-Turbo, Qwen-Plus, Qwen-Max, and specialized models for coding and mathematics.
+   - Example setup:
+     ```bash
+     export DASHSCOPE_API_KEY="your-dashscope-api-key"
+     uevo config model qwen-turbo  # Set your preferred Qwen model
+     ```
 
       You can temporarily set the environment variable in your current shell session using the following command:
 

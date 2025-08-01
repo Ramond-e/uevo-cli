@@ -60,6 +60,12 @@ export async function executeToolCall(
   }
 
   try {
+    // 先进行参数验证
+    const validationError = tool.validateToolParams(toolCallRequest.args);
+    if (validationError) {
+      throw new Error(`Tool parameter validation failed: ${validationError}`);
+    }
+
     // Directly execute without confirmation or live output handling
     const effectiveAbortSignal = abortSignal ?? new AbortController().signal;
     const toolResult: ToolResult = await tool.execute(

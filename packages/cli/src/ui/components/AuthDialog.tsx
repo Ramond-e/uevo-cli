@@ -57,6 +57,15 @@ export function AuthDialog({
     ) {
       return 'Existing API key detected (GEMINI_API_KEY). Select "Gemini API Key" option to use it.';
     }
+
+    if (process.env.DASHSCOPE_API_KEY) {
+      return 'Existing API key detected (DASHSCOPE_API_KEY). Select "Aliyun DashScope API Key" option to use it.';
+    }
+
+    if (process.env.ANTHROPIC_API_KEY) {
+      return 'Existing API key detected (ANTHROPIC_API_KEY). Select "Anthropic API Key" option to use it.';
+    }
+
     return null;
   });
   const items = [
@@ -77,6 +86,14 @@ export function AuthDialog({
       value: AuthType.USE_GEMINI,
     },
     { label: 'Vertex AI', value: AuthType.USE_VERTEX_AI },
+    {
+      label: 'Use Anthropic API Key',
+      value: AuthType.USE_ANTHROPIC,
+    },
+    {
+      label: 'Use Aliyun DashScope API Key',
+      value: AuthType.USE_ALIYUN,
+    },
   ];
 
   const initialAuthIndex = items.findIndex((item) => {
@@ -93,6 +110,14 @@ export function AuthDialog({
 
     if (process.env.GEMINI_API_KEY) {
       return item.value === AuthType.USE_GEMINI;
+    }
+
+    if (process.env.DASHSCOPE_API_KEY) {
+      return item.value === AuthType.USE_ALIYUN;
+    }
+
+    if (process.env.ANTHROPIC_API_KEY) {
+      return item.value === AuthType.USE_ANTHROPIC;
     }
 
     return item.value === AuthType.LOGIN_WITH_GOOGLE;

@@ -67,6 +67,32 @@ describe('validateAuthMethod', () => {
     });
   });
 
+  describe('USE_ALIYUN', () => {
+    it('should return null if DASHSCOPE_API_KEY is set', () => {
+      process.env.DASHSCOPE_API_KEY = 'test-dashscope-key';
+      expect(validateAuthMethod(AuthType.USE_ALIYUN)).toBeNull();
+    });
+
+    it('should return an error message if DASHSCOPE_API_KEY is not set', () => {
+      expect(validateAuthMethod(AuthType.USE_ALIYUN)).toBe(
+        'DASHSCOPE_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
+      );
+    });
+  });
+
+  describe('USE_ANTHROPIC', () => {
+    it('should return null if ANTHROPIC_API_KEY is set', () => {
+      process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
+      expect(validateAuthMethod(AuthType.USE_ANTHROPIC)).toBeNull();
+    });
+
+    it('should return an error message if ANTHROPIC_API_KEY is not set', () => {
+      expect(validateAuthMethod(AuthType.USE_ANTHROPIC)).toBe(
+        'ANTHROPIC_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
+      );
+    });
+  });
+
   it('should return an error message for an invalid auth method', () => {
     expect(validateAuthMethod('invalid-method')).toBe(
       'Invalid auth method selected.',

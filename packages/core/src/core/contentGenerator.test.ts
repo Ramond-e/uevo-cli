@@ -136,4 +136,20 @@ describe('createContentGeneratorConfig', () => {
     expect(config.apiKey).toBeUndefined();
     expect(config.vertexai).toBeUndefined();
   });
+
+  it('should create config for Aliyun DashScope API Key auth', async () => {
+    process.env.DASHSCOPE_API_KEY = 'test-dashscope-key';
+    const mockConfig = {
+      getModel: () => 'qwen-turbo',
+      getProxy: () => undefined,
+    } as any;
+
+    const config = await createContentGeneratorConfig(
+      mockConfig,
+      AuthType.USE_ALIYUN,
+    );
+
+    expect(config.apiKey).toBe('test-dashscope-key');
+    expect(config.authType).toBe(AuthType.USE_ALIYUN);
+  });
 });

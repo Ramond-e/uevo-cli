@@ -38,18 +38,30 @@ export const validateAuthMethod = (authMethod: string): string | null => {
     return null;
   }
 
+  if (authMethod === AuthType.USE_ALIYUN) {
+    if (!process.env.DASHSCOPE_API_KEY) {
+      return 'DASHSCOPE_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!';
+    }
+    return null;
+  }
+
+  if (authMethod === AuthType.USE_ANTHROPIC) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return 'ANTHROPIC_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!';
+    }
+    return null;
+  }
+
   // Support additional provider authentication methods (these are used by /api and /model commands)
   // but they are not primary authentication methods for the CLI itself
   if (
-    authMethod === AuthType.USE_ANTHROPIC ||
     authMethod === AuthType.USE_DEEPSEEK ||
     authMethod === AuthType.USE_OPENAI ||
-    authMethod === AuthType.USE_OPENROUTER ||
-    authMethod === AuthType.USE_ALIYUN
+    authMethod === AuthType.USE_OPENROUTER
   ) {
     // These are valid auth types but not used for primary CLI authentication
     // They are used by the new /api and /model commands for multi-provider support
-    return 'This authentication method is not supported for primary CLI authentication. Please use "Login with Google", "Use Gemini API Key", or "Vertex AI" instead.';
+    return 'This authentication method is not supported for primary CLI authentication. Please use "Login with Google", "Use Gemini API Key", "Vertex AI", "Anthropic API Key", or "Aliyun DashScope API Key" instead.';
   }
 
   return 'Invalid auth method selected.';

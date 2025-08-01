@@ -150,8 +150,11 @@ Process Group PGID: Process group started or \`(none)\``,
      * Extracts and normalizes shell commands from a list of tool strings.
      * e.g., 'ShellTool("ls -l")' becomes 'ls -l'
      */
-    const extractCommands = (tools: string[]): string[] =>
-      tools.flatMap((tool) => {
+    const extractCommands = (tools: string[] | undefined): string[] => {
+      if (!tools || !Array.isArray(tools)) {
+        return [];
+      }
+      return tools.flatMap((tool) => {
         for (const toolName of SHELL_TOOL_NAMES) {
           if (tool.startsWith(`${toolName}(`) && tool.endsWith(')')) {
             return [normalize(tool.slice(toolName.length + 1, -1))];
@@ -159,24 +162,29 @@ Process Group PGID: Process group started or \`(none)\``,
         }
         return [];
       });
+    };
 
     const coreTools = this.config.getCoreTools() || [];
     const excludeTools = this.config.getExcludeTools() || [];
 
+    // 确保 coreTools 和 excludeTools 是有效的数组
+    const safeCoreTools = Array.isArray(coreTools) ? coreTools : [];
+    const safeExcludeTools = Array.isArray(excludeTools) ? excludeTools : [];
+
     // 1. Check if the shell tool is globally disabled.
-    if (SHELL_TOOL_NAMES.some((name) => excludeTools.includes(name))) {
+    if (SHELL_TOOL_NAMES.some((name) => safeExcludeTools.includes(name))) {
       return {
         allowed: false,
         reason: 'Shell tool is globally disabled in configuration',
       };
     }
 
-    const blockedCommands = new Set(extractCommands(excludeTools));
-    const allowedCommands = new Set(extractCommands(coreTools));
+    const blockedCommands = new Set(extractCommands(safeExcludeTools));
+    const allowedCommands = new Set(extractCommands(safeCoreTools));
 
     const hasSpecificAllowedCommands = allowedCommands.size > 0;
     const isWildcardAllowed = SHELL_TOOL_NAMES.some((name) =>
-      coreTools.includes(name),
+      safeCoreTools.includes(name),
     );
 
     const commandsToValidate = command.split(/&&|\|\||\||;/).map(normalize);
