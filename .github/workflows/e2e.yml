@@ -4,7 +4,7 @@ name: E2E Tests
 
 on:
   push:
-    branches: [release]  # 暂时禁用main分支的E2E测试
+    branches: [main]
   merge_group:
 
 jobs:

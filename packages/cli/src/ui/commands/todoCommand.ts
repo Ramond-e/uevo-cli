@@ -5,7 +5,7 @@
  */
 
 import { SlashCommand, MessageActionReturn, CommandKind, CommandContext } from './types.js';
-// import { TodoStatus } from '../types/todo.js';
+import { TodoStatus } from '../types/todo.js';
 
 const todoCompleteAction = async (context: CommandContext, args: string): Promise<MessageActionReturn> => {
   const todoId = parseInt(args.trim(), 10);
