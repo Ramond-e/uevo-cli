@@ -15,6 +15,7 @@ import {
   BugCommandSettings,
   TelemetrySettings,
   AuthType,
+  TrustedDirsConfig,
 } from '@uevo/uevo-cli-core';
 import stripJsonComments from 'strip-json-comments';
 import { DefaultLight } from '../ui/themes/default-light.js';
@@ -97,6 +98,9 @@ export interface Settings {
 
   // A map of tool names to their summarization settings.
   summarizeToolOutput?: Record<string, SummarizeToolOutputSettings>;
+
+  // Trusted directories configuration
+  trustedDirs?: TrustedDirsConfig;
 
   // Add other settings here.
   ideMode?: boolean;
@@ -400,5 +404,35 @@ export function saveSettings(settingsFile: SettingsFile): void {
     );
   } catch (error) {
     console.error('Error saving user settings file:', error);
+  }
+}
+
+/**
+ * Update user settings by merging new settings with existing ones
+ */
+export async function updateUserSettings(newSettings: Partial<Settings>): Promise<void> {
+  try {
+    // Load current settings - loadSettings requires workspaceDir
+    const workspaceDir = process.cwd();
+    const loaded = loadSettings(workspaceDir);
+    
+    // Get the current user settings
+    const existingSettings = loaded.user.settings || {};
+    
+    // Merge new settings with existing ones
+    const mergedSettings: Settings = {
+      ...existingSettings,
+      ...newSettings,
+    };
+    
+    // Save the updated settings
+    const settingsFile: SettingsFile = {
+      path: USER_SETTINGS_PATH,
+      settings: mergedSettings,
+    };
+    
+    saveSettings(settingsFile);
+  } catch (error) {
+    throw new Error(`Failed to update user settings: ${getErrorMessage(error)}`);
   }
 }
