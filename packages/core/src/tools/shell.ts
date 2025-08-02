@@ -119,6 +119,14 @@ Process Group PGID: Process group started or \`(none)\``,
    * @returns An object with 'allowed' boolean and optional 'reason' string if not allowed
    */
   isCommandAllowed(command: string): { allowed: boolean; reason?: string } {
+    // 如果当前目录在可信目录中，允许所有命令
+    if (this.config.isCurrentDirTrusted()) {
+      return { 
+        allowed: true, 
+        reason: 'Command allowed in trusted directory' 
+      };
+    }
+
     // 0. Disallow command substitution
     if (command.includes('$(')) {
       return {

@@ -7,6 +7,7 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import process from 'node:process';
+import * as path from 'path';
 import {
   Config,
   loadServerHierarchicalMemory,
@@ -21,12 +22,38 @@ import {
   FileFilteringOptions,
   MCPServerConfig,
   IDE_SERVER_NAME,
+  TrustedDirsConfig,
 } from '@uevo/uevo-cli-core';
 import { Settings } from './settings.js';
 
 import { Extension, annotateActiveExtensions } from './extension.js';
 import { getCliVersion } from '../utils/version.js';
 import { loadSandboxConfig } from './sandboxConfig.js';
+
+/**
+ * 从设置和环境变量加载可信目录配置
+ */
+function loadTrustedDirsConfig(settings: Settings): TrustedDirsConfig | undefined {
+  // 优先从环境变量读取 UEVO_TRUSTED_DIRS
+  const envTrustedDirs = process.env.UEVO_TRUSTED_DIRS;
+  if (envTrustedDirs) {
+    const directories = envTrustedDirs.split(path.delimiter).filter(dir => dir.trim());
+    if (directories.length > 0) {
+      return {
+        directories,
+        recursive: true,
+        description: 'Loaded from UEVO_TRUSTED_DIRS environment variable'
+      };
+    }
+  }
+
+  // 从设置文件读取
+  if (settings.trustedDirs) {
+    return settings.trustedDirs;
+  }
+
+  return undefined;
+}
 
 // Simple console logger for now - replace with actual logger if available
 const logger = {
@@ -478,6 +505,7 @@ export async function loadCliConfig(
     noBrowser: !!process.env.NO_BROWSER,
     summarizeToolOutput: settings.summarizeToolOutput,
     ideMode,
+    trustedDirs: loadTrustedDirsConfig(settings),
   });
 }
 
