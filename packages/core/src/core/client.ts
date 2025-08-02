@@ -171,10 +171,11 @@ export class GeminiClient {
     );
     this.chat = await this.startChat();
     
-    // 初始化AnthropicClient（如果配置了API密钥）
-    if (this.config.getAnthropicApiKey()) {
+    // 初始化AnthropicClient（如果使用Anthropic认证或配置了API密钥）
+    if (contentGeneratorConfig.authType === AuthType.USE_ANTHROPIC || this.config.getAnthropicApiKey()) {
       this.anthropicClient = new AnthropicClient(this.config);
       await this.anthropicClient.initialize();
+      console.log('[GeminiClient] ✅ AnthropicClient已初始化');
     }
   }
 

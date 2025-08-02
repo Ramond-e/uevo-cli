@@ -38,9 +38,20 @@ export const useAuthCommand = (
 
       try {
         setIsAuthenticating(true);
+        console.log(`[useAuthCommand] 开始认证流程: ${authType}`);
         await config.refreshAuth(authType);
-        console.log(`Authenticated via "${authType}".`);
+        console.log(`[useAuthCommand] ✅ 认证完成: ${authType}`);
+        
+        // 特别针对 Anthropic 的额外验证
+        if (authType === AuthType.USE_ANTHROPIC) {
+          const anthropicApiKey = config.getAnthropicApiKey();
+          if (!anthropicApiKey) {
+            throw new Error('Anthropic API 密钥验证失败：无法获取 API 密钥');
+          }
+          console.log(`[useAuthCommand] ✅ Anthropic API 密钥验证通过，长度: ${anthropicApiKey.length}`);
+        }
       } catch (e) {
+        console.error(`[useAuthCommand] ❌ 认证失败:`, e);
         setAuthError(`Failed to login. Message: ${getErrorMessage(e)}`);
         openAuthDialog();
       } finally {

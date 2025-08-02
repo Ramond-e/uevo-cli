@@ -287,10 +287,17 @@ export class AnthropicClient {
       apiKey,
       maxRetries: 3,
       timeout: 60000, // 60秒超时
+      // 添加默认头部来确保正确的权限设置
+      defaultHeaders: {
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
     });
 
     this.loopDetector = new LoopDetectionService(config);
     this.toolCallAdapter = ToolCallAdapterFactory.createAdapter('claude');
+    
+    console.log('[AnthropicClient] ✅ Anthropic客户端初始化完成');
   }
 
   /**
@@ -298,7 +305,7 @@ export class AnthropicClient {
    */
   private getAnthropicApiKey(): string {
     // 从环境变量或配置中获取API密钥
-    const apiKey = process.env.ANTHROPIC_API_KEY || this.config.getAnthropicApiKey?.();
+    const apiKey = this.config.getAnthropicApiKey() || process.env.ANTHROPIC_API_KEY;
     
     if (!apiKey) {
       throw new Error(
@@ -306,6 +313,7 @@ export class AnthropicClient {
       );
     }
     
+    console.log(`[AnthropicClient] ✅ API密钥已加载，长度: ${apiKey.length}`);
     return apiKey;
   }
 
@@ -695,12 +703,17 @@ export class AnthropicClient {
       while (toolCallCount < maxToolCalls) {
         console.log(`[CLAUDE DEBUG] 开始第${toolCallCount + 1}轮对话，历史记录长度: ${this.conversationHistory.length}`);
         
+        // 验证和清理消息历史
+        const cleanedHistory = this.validateAndCleanHistory();
+        console.log(`[CLAUDE DEBUG] 清理后的历史记录长度: ${cleanedHistory.length}`);
+        
+        // 暂时禁用工具以测试基础功能
         const requestParams: Anthropic.MessageCreateParams = {
           model,
           max_tokens: maxTokens,
           temperature,
-          messages: this.conversationHistory as Anthropic.MessageParam[],
-          tools: tools.length > 0 ? tools : undefined,
+          messages: cleanedHistory as Anthropic.MessageParam[],
+          // tools: tools.length > 0 ? tools : undefined,  // 暂时注释掉
         };
 
         // 使用简化的提示词选择器，根据模型类型选择对应的提示词
@@ -812,10 +825,28 @@ export class AnthropicClient {
         toolCalls: allToolCalls,
       };
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`[AnthropicClient] ❌ API调用失败:`, error);
+      
+      // 详细错误信息记录
+      if (error?.status) {
+        console.error(`[AnthropicClient] HTTP状态码: ${error.status}`);
+      }
+      if (error?.error) {
+        console.error(`[AnthropicClient] API错误详情:`, error.error);
+      }
+      
       const errorMessage = getErrorMessage(error);
       reportError(error, 'Anthropic API call failed');
-      throw new Error(`Anthropic API调用失败: ${errorMessage}`);
+      
+      // 为403错误提供特殊处理
+      if (error?.status === 403) {
+        throw new Error(`权限被拒绝 (403): 请检查您的Anthropic API密钥是否有效，以及是否有足够的权限访问所请求的模型 "${model}"。可能的原因：1. API密钥无效或过期 2. 没有访问该模型的权限 3. 账户配额不足`);
+      } else if (error?.status === 401) {
+        throw new Error(`认证失败 (401): 请检查您的Anthropic API密钥是否正确设置。当前API密钥长度: ${this.getAnthropicApiKey().length}`);
+      } else {
+        throw new Error(`Anthropic API调用失败: ${errorMessage}`);
+      }
     }
   }
 
@@ -852,12 +883,21 @@ export class AnthropicClient {
     const tools = this.convertToolsToAnthropicFormat();
 
     try {
+      console.log(`[AnthropicClient] 🚀 准备发送流式请求到Claude API`);
+      console.log(`[AnthropicClient] 模型: ${model}, 工具数量: ${tools.length}`);
+      console.log(`[AnthropicClient] API密钥长度: ${this.getAnthropicApiKey().length}`);
+      
+      // 验证和清理消息历史
+      const cleanedHistory = this.validateAndCleanHistory();
+      console.log(`[AnthropicClient] 流式请求 - 清理后的历史记录长度: ${cleanedHistory.length}`);
+      
+      // 暂时禁用工具以测试基础功能
       const requestParams: Anthropic.MessageCreateParams = {
         model,
         max_tokens: maxTokens,
         temperature,
-        messages: this.conversationHistory as Anthropic.MessageParam[],
-        tools: tools.length > 0 ? tools : undefined,
+        messages: cleanedHistory as Anthropic.MessageParam[],
+        // tools: tools.length > 0 ? tools : undefined,  // 暂时注释掉
         stream: true,
       };
 
@@ -865,15 +905,22 @@ export class AnthropicClient {
       const smartPrompt = systemPrompt || getSimpleSystemPrompt(model, this.config.getUserMemory());
       if (smartPrompt) {
         requestParams.system = smartPrompt;
-        // Force log the system prompt for streaming
-        console.log('='.repeat(80));
-        console.log('🔴🔴🔴 [FORCE DEBUG] SENDING SYSTEM PROMPT TO CLAUDE (STREAM) 🔴🔴🔴');
-        console.log('='.repeat(80));
-        console.log(smartPrompt);
-        console.log('='.repeat(80));
+        console.log(`[AnthropicClient] ✅ 系统提示词已设置，长度: ${smartPrompt.length}`);
       }
 
+      console.log(`[AnthropicClient] 📤 发送请求参数:`, {
+        model: requestParams.model,
+        max_tokens: requestParams.max_tokens,
+        temperature: requestParams.temperature,
+        messages_count: requestParams.messages?.length || 0,
+        tools_count: requestParams.tools?.length || 0,
+        has_system: !!requestParams.system,
+        stream: requestParams.stream,
+      });
+
       const stream = await this.client.messages.create(requestParams) as AsyncIterable<Anthropic.MessageStreamEvent>;
+      
+      console.log(`[AnthropicClient] ✅ 流式连接已建立`);
       
       // 记录完整的Claude交互（请求）- 流式版本
       // 注意：流式响应需要在结束时记录完整响应
@@ -1016,15 +1063,36 @@ export class AnthropicClient {
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`[AnthropicClient] ❌ 流式调用失败:`, error);
+      
+      // 详细错误信息记录
+      if (error?.status) {
+        console.error(`[AnthropicClient] HTTP状态码: ${error.status}`);
+      }
+      if (error?.error) {
+        console.error(`[AnthropicClient] API错误详情:`, error.error);
+      }
+      if (error?.headers) {
+        console.error(`[AnthropicClient] 响应头:`, error.headers);
+      }
+      
       const errorMessage = getErrorMessage(error);
       reportError(error, 'Anthropic streaming failed');
+      
+      // 为403错误提供特殊处理
+      let userFriendlyMessage = `Anthropic流式调用失败: ${errorMessage}`;
+      if (error?.status === 403) {
+        userFriendlyMessage = `权限被拒绝 (403): 请检查您的Anthropic API密钥是否有效，以及是否有足够的权限访问所请求的模型。`;
+      } else if (error?.status === 401) {
+        userFriendlyMessage = `认证失败 (401): 请检查您的Anthropic API密钥是否正确设置。`;
+      }
       
       yield {
         type: GeminiEventType.Error,
         value: {
           error: {
-            message: `Anthropic流式调用失败: ${errorMessage}`,
+            message: userFriendlyMessage,
           },
         },
       };
@@ -1042,6 +1110,49 @@ export class AnthropicClient {
       this.toolCallAdapter.resetErrorState();
       console.log(`[CLAUDE DEBUG] 🔄 对话历史已清理，Claude适配器错误状态已重置`);
     }
+  }
+
+  /**
+   * 验证和清理消息历史，确保符合Anthropic API要求
+   */
+  private validateAndCleanHistory(): AnthropicMessage[] {
+    if (this.conversationHistory.length === 0) {
+      return [];
+    }
+
+    const cleanedHistory: AnthropicMessage[] = [];
+    let lastRole: 'user' | 'assistant' | null = null;
+
+    for (const message of this.conversationHistory) {
+      // 跳过连续的相同角色消息
+      if (message.role !== lastRole) {
+        // 确保消息内容是字符串格式
+        const content = typeof message.content === 'string' 
+          ? message.content 
+          : JSON.stringify(message.content);
+        
+        cleanedHistory.push({
+          role: message.role,
+          content: content,
+        });
+        lastRole = message.role;
+      } else {
+        console.log(`[AnthropicClient] 跳过连续的 ${message.role} 消息`);
+      }
+    }
+
+    // 确保历史以用户消息开始
+    while (cleanedHistory.length > 0) {
+      const firstMessage = cleanedHistory[0];
+      if (firstMessage && firstMessage.role !== 'user') {
+        console.log(`[AnthropicClient] 移除开头的非用户消息: ${firstMessage.role}`);
+        cleanedHistory.shift();
+      } else {
+        break;
+      }
+    }
+
+    return cleanedHistory;
   }
 
   /**

@@ -46,9 +46,17 @@ export const validateAuthMethod = (authMethod: string): string | null => {
   }
 
   if (authMethod === AuthType.USE_ANTHROPIC) {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+    if (!anthropicApiKey) {
       return 'ANTHROPIC_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!';
     }
+    
+    // 验证 API 密钥格式
+    if (!anthropicApiKey.startsWith('sk-ant-')) {
+      return 'Invalid ANTHROPIC_API_KEY format. The key should start with "sk-ant-".';
+    }
+    
+    console.log(`[Auth] ✅ Anthropic API密钥格式验证通过，长度: ${anthropicApiKey.length}`);
     return null;
   }
 

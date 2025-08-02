@@ -186,6 +186,8 @@ export async function createContentGenerator(
     config.authType === AuthType.USE_OPENROUTER ||
     config.authType === AuthType.USE_ALIYUN
   ) {
+    console.log(`[ContentGenerator] 使用代理内容生成器处理提供商: ${config.authType}`);
+    
     // Return a minimal content generator that will be handled by AIClient
     return {
       generateContent: async () => {

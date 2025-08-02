@@ -29,9 +29,7 @@ import {
 } from '../tools/memoryTool.js';
 import { WebSearchTool } from '../tools/web-search.js';
 import { GeminiClient } from '../core/client.js';
-// import { SmartAIClient } from '../core/smartAIClient.js'; // 不再使用SmartAIClient
 import { getModelInfo as getModelInfoFromMapping } from '../core/modelProviderMapping.js';
-// import { AIClientFactory } from '../core/aiClientFactory.js'; // 不再使用AIClientFactory
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { GitService } from '../services/gitService.js';
 import { getProjectTempDir } from '../utils/paths.js';
@@ -84,20 +82,24 @@ export interface GeminiCLIExtension {
   version: string;
   isActive: boolean;
 }
+
 export interface FileFilteringOptions {
   respectGitIgnore: boolean;
   respectuevoignore: boolean;
 }
+
 // For memory files
 export const DEFAULT_MEMORY_FILE_FILTERING_OPTIONS: FileFilteringOptions = {
   respectGitIgnore: false,
   respectuevoignore: true,
 };
+
 // For all other files
 export const DEFAULT_FILE_FILTERING_OPTIONS: FileFilteringOptions = {
   respectGitIgnore: true,
   respectuevoignore: true,
 };
+
 export class MCPServerConfig {
   constructor(
     // For stdio transport
@@ -235,6 +237,7 @@ export class Config {
     | undefined;
   private readonly experimentalAcp: boolean = false;
   private anthropicApiKey: string | undefined;
+  private geminiClient?: GeminiClient;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -296,7 +299,7 @@ export class Config {
       initializeTelemetry(this);
     }
 
-    if (this.getUsageStatisticsEnabled()) {
+    if (this.usageStatisticsEnabled) {
       ClearcutLogger.getInstance(this)?.logStartSessionEvent(
         new StartSessionEvent(this),
       );
@@ -308,7 +311,7 @@ export class Config {
   async initialize(): Promise<void> {
     // Initialize centralized FileDiscoveryService
     this.getFileService();
-    if (this.getCheckpointingEnabled()) {
+    if (this.checkpointing) {
       await this.getGitService();
     }
     this.toolRegistry = await this.createToolRegistry();
@@ -331,7 +334,10 @@ export class Config {
     if (authMethod === AuthType.USE_ANTHROPIC) {
       const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
       if (anthropicApiKey) {
-        this.setAnthropicApiKey(anthropicApiKey);
+        this.anthropicApiKey = anthropicApiKey;
+        console.log(`[Config] ✅ Anthropic API密钥已配置，长度: ${anthropicApiKey.length}`);
+      } else {
+        throw new Error('ANTHROPIC_API_KEY environment variable not found');
       }
     }
 
@@ -340,6 +346,8 @@ export class Config {
 
     // Reset the session flag since we're explicitly changing auth and using default model
     this.modelSwitchedDuringSession = false;
+    
+    console.log(`[Config] ✅ 认证刷新完成，认证类型: ${authMethod}`);
   }
 
   getSessionId(): string {
@@ -375,7 +383,7 @@ export class Config {
 
   resetModelToDefault(): void {
     if (this.contentGeneratorConfig) {
-      this.contentGeneratorConfig.model = this.model; // Reset to the original default model
+      this.contentGeneratorConfig.model = this.model;
       this.modelSwitchedDuringSession = false;
     }
   }
@@ -419,6 +427,7 @@ export class Config {
   getDebugMode(): boolean {
     return this.debugMode;
   }
+
   getQuestion(): string | undefined {
     return this.question;
   }
@@ -518,6 +527,7 @@ export class Config {
   getFileFilteringRespectGitIgnore(): boolean {
     return this.fileFiltering.respectGitIgnore;
   }
+
   getFileFilteringRespectuevoignore(): boolean {
     return this.fileFiltering.respectuevoignore;
   }
@@ -605,8 +615,6 @@ export class Config {
   async createToolRegistry(): Promise<ToolRegistry> {
     const registry = new ToolRegistry(this);
 
-    // helper to create & register core tools that are enabled
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const registerCoreTool = (ToolClass: any, ...args: unknown[]) => {
       const className = ToolClass.name;
       const toolName = ToolClass.Name || className;
@@ -666,9 +674,6 @@ export class Config {
     return registry;
   }
 
-  /**
-   * 获取AI客户端实例（直接使用GeminiClient）
-   */
   getAIClient(): GeminiClient {
     if (!this.geminiClient) {
       this.geminiClient = new GeminiClient(this);
@@ -676,9 +681,6 @@ export class Config {
     return this.geminiClient;
   }
 
-  /**
-   * 获取原始的GeminiClient实例（向后兼容）
-   */
   getGeminiClient(): GeminiClient {
     if (!this.geminiClient) {
       this.geminiClient = new GeminiClient(this);
@@ -686,16 +688,10 @@ export class Config {
     return this.geminiClient!;
   }
 
-  /**
-   * 获取智能AI客户端（现在直接返回Gemini客户端）
-   */
   getSmartAIClient(): GeminiClient {
     return this.getAIClient();
   }
 
-    /**
-   * 获取模型的详细信息，包括提供商和配置状态
-   */
   getModelInfo(modelName: string = this.getModel()): {
     provider: string;
     envVar: string;
@@ -705,19 +701,15 @@ export class Config {
     try {
       return getModelInfoFromMapping(modelName);
     } catch (error) {
-      // 如果映射模块加载失败，返回默认的Gemini信息
       return {
         provider: 'gemini',
-            envVar: 'GEMINI_API_KEY',
-    isConfigured: !!process.env.GEMINI_API_KEY,
+        envVar: 'GEMINI_API_KEY',
+        isConfigured: !!process.env.GEMINI_API_KEY,
         providerName: 'Google Gemini',
       };
     }
   }
 
-  /**
-   * 获取Anthropic API密钥
-   */
   getAnthropicApiKey(): string | undefined {
     return this.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
   }
@@ -725,9 +717,7 @@ export class Config {
   setAnthropicApiKey(apiKey: string): void {
     this.anthropicApiKey = apiKey;
   }
-
-  private geminiClient?: GeminiClient;
-  // private smartAIClient?: any; // 不再使用SmartAIClient
 }
+
 // Export model constants for use in CLI
 export { DEFAULT_UEVO_FLASH_MODEL };
