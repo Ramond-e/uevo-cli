@@ -234,7 +234,7 @@ export class Config {
     | Record<string, SummarizeToolOutputSettings>
     | undefined;
   private readonly experimentalAcp: boolean = false;
-  private readonly anthropicApiKey: string | undefined;
+  private anthropicApiKey: string | undefined;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -327,6 +327,13 @@ export class Config {
       this,
       authMethod,
     );
+
+    if (authMethod === AuthType.USE_ANTHROPIC) {
+      const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+      if (anthropicApiKey) {
+        this.setAnthropicApiKey(anthropicApiKey);
+      }
+    }
 
     this.geminiClient = new GeminiClient(this);
     await this.geminiClient.initialize(this.contentGeneratorConfig);
@@ -713,6 +720,10 @@ export class Config {
    */
   getAnthropicApiKey(): string | undefined {
     return this.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
+  }
+
+  setAnthropicApiKey(apiKey: string): void {
+    this.anthropicApiKey = apiKey;
   }
 
   private geminiClient?: GeminiClient;
