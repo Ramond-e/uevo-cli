@@ -1,0 +1,24 @@
+{
+  "id": "search_9ffb6231_1754138061698",
+  "originalQuery": "数据库设计最佳实践",
+  "keywords": [],
+  "timestamp": "2025-08-02T12:34:21.698Z",
+  "searchResult": {
+    "llmContent": "Information about \"数据库设计最佳实践\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"数据库设计最佳实践\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"数据库设计最佳实践\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": []
+    }
+  ],
+  "usageCount": 1,
+  "lastUsed": "2025-08-02T12:34:21.698Z",
+  "relevanceScore": 1
+}

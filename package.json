@@ -31,6 +31,11 @@
     "test": "npm run test --workspaces",
     "test:ci": "npm run test:ci --workspaces --if-present && npm run test:scripts",
     "test:scripts": "vitest run --config ./scripts/tests/vitest.config.ts",
+    "test:search-cache": "node test-search-cache.cjs",
+    "test:search-integration": "node test-integration.cjs",
+    "test:search-real": "node test-real-integration.cjs",
+    "test:search-accuracy": "node test-search-accuracy.cjs",
+
     "test:e2e": "npm run test:integration:sandbox:none -- --verbose --keep-output",
     "test:integration:all": "npm run test:integration:sandbox:none && npm run test:integration:sandbox:docker && npm run test:integration:sandbox:podman",
     "test:integration:sandbox:none": "GEMINI_SANDBOX=false node integration-tests/run-tests.js",
@@ -80,6 +85,7 @@
     "mock-fs": "^5.5.0",
     "prettier": "^3.5.3",
     "react-devtools-core": "^4.28.5",
+    "tsx": "^4.20.3",
     "typescript-eslint": "^8.30.1",
     "vitest": "^3.2.4",
     "yargs": "^17.7.2"

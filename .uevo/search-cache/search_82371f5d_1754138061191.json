@@ -1,0 +1,24 @@
+{
+  "id": "search_82371f5d_1754138061191",
+  "originalQuery": "前端开发框架",
+  "keywords": [],
+  "timestamp": "2025-08-02T12:34:21.192Z",
+  "searchResult": {
+    "llmContent": "Information about \"前端开发框架\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"前端开发框架\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"前端开发框架\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": []
+    }
+  ],
+  "usageCount": 1,
+  "lastUsed": "2025-08-02T12:34:21.192Z",
+  "relevanceScore": 1
+}

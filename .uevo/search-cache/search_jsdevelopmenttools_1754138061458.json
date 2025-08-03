@@ -1,0 +1,28 @@
+{
+  "id": "search_jsdevelopmenttools_1754138061458",
+  "originalQuery": "JS development tools",
+  "keywords": [
+    "development"
+  ],
+  "timestamp": "2025-08-02T12:34:21.459Z",
+  "searchResult": {
+    "llmContent": "Information about \"JS development tools\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"JS development tools\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"JS development tools\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript"
+      ]
+    }
+  ],
+  "usageCount": 1,
+  "lastUsed": "2025-08-02T12:34:21.459Z",
+  "relevanceScore": 1
+}

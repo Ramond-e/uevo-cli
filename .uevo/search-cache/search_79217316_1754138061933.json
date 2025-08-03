@@ -1,0 +1,24 @@
+{
+  "id": "search_79217316_1754138061933",
+  "originalQuery": "人工智能算法",
+  "keywords": [],
+  "timestamp": "2025-08-02T12:34:21.933Z",
+  "searchResult": {
+    "llmContent": "Information about \"人工智能算法\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"人工智能算法\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"人工智能算法\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": []
+    }
+  ],
+  "usageCount": 1,
+  "lastUsed": "2025-08-02T12:34:21.933Z",
+  "relevanceScore": 1
+}

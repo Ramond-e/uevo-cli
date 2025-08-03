@@ -1,0 +1,24 @@
+{
+  "id": "search_54b1a40d_1754138061581",
+  "originalQuery": "前端性能优化工具",
+  "keywords": [],
+  "timestamp": "2025-08-02T12:34:21.582Z",
+  "searchResult": {
+    "llmContent": "Information about \"前端性能优化工具\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"前端性能优化工具\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"前端性能优化工具\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": []
+    }
+  ],
+  "usageCount": 1,
+  "lastUsed": "2025-08-02T12:34:21.582Z",
+  "relevanceScore": 1
+}

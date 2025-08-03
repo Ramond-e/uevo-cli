@@ -28,6 +28,7 @@ import {
   GEMINI_CONFIG_DIR as GEMINI_DIR,
 } from '../tools/memoryTool.js';
 import { WebSearchTool } from '../tools/web-search.js';
+import { EnhancedWebSearchTool } from '../tools/enhanced-web-search.js';
 import { GeminiClient } from '../core/client.js';
 import { getModelInfo as getModelInfoFromMapping } from '../core/modelProviderMapping.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
@@ -668,6 +669,11 @@ export class Config {
     }
     
     registerCoreTool(MemoryTool);
+    
+    // 使用增强版 WebSearchTool（集成缓存功能）
+    registerCoreTool(EnhancedWebSearchTool, this);
+    
+    // 注册原版 WebSearchTool（作为备用）
     registerCoreTool(WebSearchTool, this);
 
     await registry.discoverTools();

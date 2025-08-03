@@ -1,0 +1,29 @@
+{
+  "id": "search_javascripttools_1754138061314",
+  "originalQuery": "JavaScript tools",
+  "keywords": [
+    "javascript"
+  ],
+  "timestamp": "2025-08-02T12:34:21.315Z",
+  "searchResult": {
+    "llmContent": "Information about \"JavaScript tools\": Various tools and resources are available.",
+    "sources": []
+  },
+  "summary": "Information about \"JavaScript tools\": Various tools and resources are available",
+  "extractedTools": [
+    {
+      "name": "information",
+      "description": "about \"JavaScript tools\": Various tools and resources are available.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "java"
+      ]
+    }
+  ],
+  "usageCount": 2,
+  "lastUsed": "2025-08-02T12:34:21.342Z",
+  "relevanceScore": 1
+}

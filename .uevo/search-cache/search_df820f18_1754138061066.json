@@ -1,0 +1,117 @@
+{
+  "id": "search_df820f18_1754138061066",
+  "originalQuery": "前端框架推荐",
+  "keywords": [],
+  "timestamp": "2025-08-02T12:34:21.068Z",
+  "searchResult": {
+    "llmContent": "Popular frontend frameworks:\n\n1. **React** - A JavaScript library for building user interfaces, developed by Facebook.\n\n2. **Vue.js** - The Progressive JavaScript Framework that is approachable, versatile, and performant.\n\n3. **Angular** - A platform for building mobile and desktop web applications using TypeScript.\n\n4. **Svelte** - A radical new approach to building user interfaces with compile-time optimizations.\n\n5. **Next.js** - A React framework that enables functionality like server-side rendering.",
+    "sources": [
+      {
+        "web": {
+          "title": "React",
+          "uri": "https://react.dev/"
+        }
+      },
+      {
+        "web": {
+          "title": "Vue.js",
+          "uri": "https://vuejs.org/"
+        }
+      }
+    ]
+  },
+  "summary": "Popular frontend frameworks:\n\n1.  **React** - A JavaScript library for building user interfaces, developed by Facebook. js** - The Progressive JavaScript Framework that is approachable, versatile, and performant...",
+  "extractedTools": [
+    {
+      "name": "popular",
+      "description": "frontend frameworks:",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "react",
+      "description": "* - A JavaScript library for building user interfaces, developed by Facebook.",
+      "category": "other",
+      "urls": [
+        "https://react.dev/"
+      ],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "vue",
+      "description": ".js** - The Progressive JavaScript Framework that is approachable, versatile, and performant.",
+      "category": "other",
+      "urls": [
+        "https://vuejs.org/"
+      ],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "angular",
+      "description": "* - A platform for building mobile and desktop web applications using TypeScript.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "svelte",
+      "description": "* - A radical new approach to building user interfaces with compile-time optimizations.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "next",
+      "description": ".js** - A React framework that enables functionality like server-side rendering.",
+      "category": "other",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    },
+    {
+      "name": "typescript",
+      "description": "",
+      "category": "compiler",
+      "urls": [],
+      "features": [],
+      "supportedLanguages": [
+        "javascript",
+        "typescript",
+        "java"
+      ]
+    }
+  ],
+  "usageCount": 5,
+  "lastUsed": "2025-08-02T12:34:21.974Z",
+  "relevanceScore": 1
+}
