@@ -248,6 +248,7 @@ export class Config {
     | undefined;
   private readonly experimentalAcp: boolean = false;
   private anthropicApiKey: string | undefined;
+  private readonly trustedDirs: TrustedDirsConfig | undefined;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -732,6 +733,53 @@ export class Config {
 
   setAnthropicApiKey(apiKey: string): void {
     this.anthropicApiKey = apiKey;
+  }
+
+  /**
+   * 获取可信目录配置
+   */
+  getTrustedDirs(): TrustedDirsConfig | undefined {
+    return this.trustedDirs;
+  }
+
+  /**
+   * 检查给定路径是否在可信目录中
+   * @param filePath 要检查的文件路径
+   * @returns 如果路径在可信目录中返回true，否则返回false
+   */
+  isPathInTrustedDirs(filePath: string): boolean {
+    if (!this.trustedDirs || !this.trustedDirs.directories.length) {
+      return false;
+    }
+
+    const normalizedPath = path.resolve(filePath);
+    
+    for (const trustedDir of this.trustedDirs.directories) {
+      const normalizedTrustedDir = path.resolve(trustedDir);
+      
+      if (this.trustedDirs.recursive !== false) {
+        // 默认递归检查子目录
+        if (normalizedPath.startsWith(normalizedTrustedDir + path.sep) || 
+            normalizedPath === normalizedTrustedDir) {
+          return true;
+        }
+      } else {
+        // 仅检查直接匹配
+        if (normalizedPath === normalizedTrustedDir) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * 检查当前工作目录是否在可信目录中
+   * @returns 如果当前工作目录在可信目录中返回true，否则返回false
+   */
+  isCurrentDirTrusted(): boolean {
+    return this.isPathInTrustedDirs(this.getWorkingDir());
   }
 
   private geminiClient?: GeminiClient;
