@@ -226,6 +226,7 @@ export class GeminiClient {
     signal: AbortSignal,
     prompt_id: string,
     model: string,
+    todoPrompt?: string,
   ): AsyncGenerator<ServerGeminiStreamEvent, void> {
     if (!this.anthropicClient) {
       yield {
@@ -244,10 +245,13 @@ export class GeminiClient {
       const userMessage = this.convertGeminiRequestToText(request);
       
       // 使用AnthropicClient流式发送消息
+      const userMemory = this.config.getUserMemory();
+      const systemPrompt = getCoreSystemPrompt(userMemory, todoPrompt);
       const stream = this.anthropicClient.streamMessage(userMessage, model, {
         maxTokens: 4096,
         temperature: this.generateContentConfig.temperature || 0.1,
         prompt_id: prompt_id,
+        systemPrompt: systemPrompt,
       });
 
       for await (const event of stream) {
@@ -406,7 +410,7 @@ export class GeminiClient {
     ];
     try {
       const userMemory = this.config.getUserMemory();
-      const systemInstruction = getCoreSystemPrompt(userMemory);
+      const systemInstruction = getCoreSystemPrompt(userMemory, undefined);
       const generateContentConfigWithThinking = isThinkingSupported(
         this.config.getModel(),
       )
@@ -444,6 +448,7 @@ export class GeminiClient {
     prompt_id: string,
     turns: number = this.MAX_TURNS,
     originalModel?: string,
+    todoPrompt?: string,
   ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
     // 检查是否使用Claude模型
     const currentModel = this.config.getModel();
@@ -461,7 +466,7 @@ export class GeminiClient {
       }
       
       // 使用AnthropicClient处理Claude模型请求
-      yield* this.handleClaudeRequest(request, signal, prompt_id, currentModel);
+      yield* this.handleClaudeRequest(request, signal, prompt_id, currentModel, todoPrompt);
       return new Turn(this.getChat(), prompt_id);
     }
 
@@ -574,6 +579,7 @@ export class GeminiClient {
           prompt_id,
           boundedTurns - 1,
           initialModel,
+          todoPrompt,
         );
       }
     }
@@ -592,7 +598,7 @@ export class GeminiClient {
       model || this.config.getModel() || DEFAULT_UEVO_FLASH_MODEL;
     try {
       const userMemory = this.config.getUserMemory();
-      const systemInstruction = getCoreSystemPrompt(userMemory);
+      const systemInstruction = getCoreSystemPrompt(userMemory, undefined);
       const requestConfig = {
         abortSignal,
         ...this.generateContentConfig,
@@ -687,7 +693,7 @@ export class GeminiClient {
       // 检查是否需要使用阿里云 API
       if (this.shouldUseAliyunAPI(modelToUse)) {
         const userMemory = this.config.getUserMemory();
-        const systemInstruction = getCoreSystemPrompt(userMemory);
+        const systemInstruction = getCoreSystemPrompt(userMemory, undefined);
         
         // 添加系统指令到内容中
         const contentsWithSystem = systemInstruction 
@@ -708,7 +714,7 @@ export class GeminiClient {
 
       // 使用原有的 Gemini API 逻辑
       const userMemory = this.config.getUserMemory();
-      const systemInstruction = getCoreSystemPrompt(userMemory);
+      const systemInstruction = getCoreSystemPrompt(userMemory, undefined);
 
       const requestConfig = {
         abortSignal,

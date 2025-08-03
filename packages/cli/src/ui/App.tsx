@@ -48,9 +48,7 @@ import { HistoryItemDisplay } from './components/HistoryItemDisplay.js';
 import { ContextSummaryDisplay } from './components/ContextSummaryDisplay.js';
 import { useHistory } from './hooks/useHistoryManager.js';
 import process from 'node:process';
-import { useTodoManager } from './hooks/useTodoManager.js';
-import { TodoListDisplay } from './components/TodoListDisplay.js';
-import { useGeminiStreamWithTodo } from './hooks/useGeminiStreamWithTodo.js';
+
 import {
   getErrorMessage,
   type Config,
@@ -71,6 +69,7 @@ import {
   SessionStatsProvider,
   useSessionStats,
 } from './contexts/SessionContext.js';
+import { TodoProvider } from './contexts/TodoContext.js';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useFocus } from './hooks/useFocus.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
@@ -87,6 +86,7 @@ import ansiEscapes from 'ansi-escapes';
 import { OverflowProvider } from './contexts/OverflowContext.js';
 import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
+import { TodoList } from './components/TodoList.js';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
@@ -98,9 +98,11 @@ interface AppProps {
 }
 
 export const AppWrapper = (props: AppProps) => (
-  <SessionStatsProvider>
-    <App {...props} />
-  </SessionStatsProvider>
+  <TodoProvider>
+    <SessionStatsProvider>
+      <App {...props} />
+    </SessionStatsProvider>
+  </TodoProvider>
 );
 
 const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
@@ -227,9 +229,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     setCorgiMode((prev) => !prev);
   }, []);
 
-  // TODO管理器
-  const todoManager = useTodoManager();
-  const { currentTodoList } = todoManager;
+
 
   const performMemoryRefresh = useCallback(async () => {
     addItem(
@@ -513,13 +513,13 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     initError,
     pendingHistoryItems: pendingGeminiHistoryItems,
     thought,
-  } = useGeminiStreamWithTodo({
-    geminiClient: config.getAIClient(),
+  } = useGeminiStream(
+    config.getAIClient(),
     history,
     addItem,
     setShowHelp,
     config,
-    onDebugMessage: setDebugMessage,
+    setDebugMessage,
     handleSlashCommand,
     shellModeActive,
     getPreferredEditor,
@@ -527,8 +527,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     performMemoryRefresh,
     modelSwitchedFromQuotaError,
     setModelSwitchedFromQuotaError,
-    todoManager,
-  });
+  );
   pendingHistoryItems.push(...pendingGeminiHistoryItems);
   const { elapsedTime, currentLoadingPhrase } =
     useLoadingIndicator(streamingState);
@@ -745,6 +744,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         >
           {(item) => item}
         </Static>
+        <TodoList terminalWidth={mainAreaWidth} maxHeight={8} />
         <OverflowProvider>
           <Box ref={pendingHistoryItemRef} flexDirection="column">
             {pendingHistoryItems.map((item, i) => (
@@ -856,8 +856,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
             />
           ) : (
             <>
-              {/* TODO列表显示 */}
-              <TodoListDisplay todoList={currentTodoList} />
+
               
               <LoadingIndicator
                 thought={

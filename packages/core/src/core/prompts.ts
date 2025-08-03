@@ -18,7 +18,7 @@ import { WriteFileTool } from '../tools/write-file.js';
 import process from 'node:process';
 import { isGitRepository } from '../utils/gitUtils.js';
 import { MemoryTool, GEMINI_CONFIG_DIR } from '../tools/memoryTool.js';
-import { mergeWithTodoPrompt } from './todoPrompts.js';
+
 
 /**
  * 获取工具工作空间路径
@@ -125,7 +125,7 @@ function formatUserRulesForPrompt(rulesData: { systemRule: string | null; userRu
   return rulesSection;
 }
 
-export function getCoreSystemPrompt(userMemory?: string): string {
+export function getCoreSystemPrompt(userMemory?: string, todoPrompt?: string): string {
   // if UEVO_SYSTEM_MD is set (and not 0|false), override system prompt from file
   // default path is .gemini/system.md but can be modified via custom path in UEVO_SYSTEM_MD
   let systemMdEnabled = false;
@@ -401,8 +401,32 @@ I found the following 'app.config' files:
 To help you check their settings, I can read their contents. Which one would you like to start with, or should I read all of them?
 </example>
 
+# TODO Task Management
+
+When dealing with complex tasks that require multiple steps or careful organization, you can use the TODO system:
+
+## TODO Syntax
+- **Create Task**: Use \`<create_todo>序号:任务内容</create_todo>\` to create a new task
+  - Example: \`<create_todo>1:实现用户登录功能</create_todo>\`
+- **Update Task**: Use \`<update_todo>序号:更新后的任务内容</update_todo>\` to modify existing task
+  - Example: \`<update_todo>1:实现用户登录和注册功能</update_todo>\`
+- **Complete Task**: Use \`<finish_todo>序号</finish_todo>\` to mark a task as completed
+  - Example: \`<finish_todo>1</finish_todo>\`
+
+## When to Use TODO
+- For complex multi-step tasks that benefit from organization
+- When breaking down large features into manageable pieces
+- To track progress on ongoing work
+- When tasks have dependencies or require specific ordering
+
+## Important Notes
+- TODO tasks are automatically displayed to the user in a visual panel
+- Use meaningful task descriptions that clearly explain what needs to be done
+- Number tasks sequentially (1, 2, 3, etc.)
+- Only use TODO syntax when the complexity justifies task management
+
 # Final Reminder
-Your core function is efficient and safe assistance. Balance extreme conciseness with the crucial need for clarity, especially regarding safety and potential system modifications. Always prioritize user control and project conventions. Never make assumptions about the contents of files; instead use '${ReadFileTool.Name}' or '${ReadManyFilesTool.Name}' to ensure you aren't making broad assumptions. Finally, you are an agent - please keep going until the user's query is completely resolved.
+Your core function is efficient and safe assistance. Balance extreme conciseness with the crucial need for clarity, especially regarding safety and potential system modifications. Always prioritize user control and project conventions. Never make assumptions about the contents of files; instead use '\${ReadFileTool.Name}' or '\${ReadManyFilesTool.Name}' to ensure you aren't making broad assumptions. Finally, you are an agent - please keep going until the user's query is completely resolved.
 `.trim();
 
   // if UEVO_WRITE_SYSTEM_MD is set (and not 0|false), write base system prompt to file
@@ -432,15 +456,17 @@ Your core function is efficient and safe assistance. Balance extreme conciseness
       ? `\n\n---\n\n${userMemory.trim()}`
       : '';
 
-  // 合并TODO管理提示词
-  const promptWithTodo = mergeWithTodoPrompt(basePrompt);
+  const todoSuffix = 
+    todoPrompt && todoPrompt.trim().length > 0
+      ? `\n\n---\n\n${todoPrompt.trim()}`
+      : '';
 
   // 获取用户自定义规则
   const rulesData = getUserRules();
   // 将用户规则格式化为系统提示词的一部分
   const userRulesPrompt = formatUserRulesForPrompt(rulesData);
 
-  return `${promptWithTodo}${userRulesPrompt}${memorySuffix}`;
+  return `${basePrompt}${userRulesPrompt}${memorySuffix}${todoSuffix}`;
 }
 
 /**
