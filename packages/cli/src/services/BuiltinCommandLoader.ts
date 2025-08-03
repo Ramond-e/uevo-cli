@@ -35,6 +35,7 @@ import { testTodoCommand } from '../ui/commands/testTodoCommand.js';
 import { todoCommand } from '../ui/commands/todoCommand.js';
 import { apiCommand } from '../ui/commands/apiCommand.js';
 import { modelCommand } from '../ui/commands/newModelCommand.js';
+import { promptCommand } from '../ui/commands/promptCommand.js';
 import { trustCommand } from '../ui/commands/trustCommand.js';
 
 /**
@@ -72,6 +73,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       memoryCommand,
       modelCommand,
       privacyCommand,
+      promptCommand,
       quitCommand,
       restoreCommand(this.config),
       rulesCommand,

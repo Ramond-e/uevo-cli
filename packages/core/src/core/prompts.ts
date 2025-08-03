@@ -23,7 +23,7 @@ import { mergeWithTodoPrompt } from './todoPrompts.js';
 /**
  * 获取工具工作空间路径
  */
-function getToolWorkspacePath(): string {
+export function getToolWorkspacePath(): string {
   // 首先检查环境变量
   const workspaceEnv = process.env.UEVO_TESTSPACE;
   if (workspaceEnv) {
