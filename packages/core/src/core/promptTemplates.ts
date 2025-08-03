@@ -15,7 +15,7 @@ export interface PromptTemplate {
   name: string;
   description: string;
   provider: AIProvider;
-  getSystemPrompt: (userMemory?: string) => string;
+  getSystemPrompt: (userMemory?: string, todoPrompt?: string) => string;
 }
 
 /**
@@ -27,7 +27,7 @@ export const PROMPT_TEMPLATES: Record<string, PromptTemplate> = {
     name: 'Claude助手',
     description: '针对Claude模型优化的系统提示词，包含详细的工具调用指导',
     provider: AIProvider.ANTHROPIC,
-    getSystemPrompt: (userMemory?: string) => getClaudeCompleteSystemPrompt(userMemory),
+    getSystemPrompt: (userMemory?: string, todoPrompt?: string) => getClaudeCompleteSystemPrompt(userMemory, todoPrompt),
   },
 
   // 通用模板（适用于其他所有模型）
@@ -35,7 +35,7 @@ export const PROMPT_TEMPLATES: Record<string, PromptTemplate> = {
     name: '通用助手',
     description: '适用于非Claude模型的通用系统提示词',
     provider: AIProvider.GEMINI, // 默认提供者，代表通用
-    getSystemPrompt: (userMemory?: string) => getCoreSystemPrompt(userMemory),
+    getSystemPrompt: (userMemory?: string, todoPrompt?: string) => getCoreSystemPrompt(userMemory, todoPrompt),
   },
 };
 
@@ -68,10 +68,11 @@ export function getTaskSpecificTemplate(task: 'file_management' | 'coding' | 'ge
  */
 export function getSimpleSystemPrompt(
   modelName: string, 
-  userMemory?: string
+  userMemory?: string,
+  todoPrompt?: string
 ): string {
   const template = getRecommendedTemplate(modelName);
-  return template.getSystemPrompt(userMemory);
+  return template.getSystemPrompt(userMemory, todoPrompt);
 }
 
 /**

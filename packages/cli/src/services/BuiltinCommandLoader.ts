@@ -34,6 +34,7 @@ import { toolsCommand } from '../ui/commands/toolsCommand.js';
 import { apiCommand } from '../ui/commands/apiCommand.js';
 import { modelCommand } from '../ui/commands/newModelCommand.js';
 import { trustCommand } from '../ui/commands/trustCommand.js';
+import { todoCommand } from '../ui/commands/todoCommand.js';
 
 /**
  * Loads the core, hard-coded slash commands that are an integral part
@@ -75,6 +76,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       statsCommand,
       testspaceCommand,
       themeCommand,
+      todoCommand,
       toolsCommand,
       trustCommand,
     ];
