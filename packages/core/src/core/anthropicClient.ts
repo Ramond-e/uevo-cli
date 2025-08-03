@@ -704,7 +704,7 @@ export class AnthropicClient {
         };
 
         // 使用简化的提示词选择器，根据模型类型选择对应的提示词
-        const smartPrompt = systemPrompt || getSimpleSystemPrompt(model, this.config.getUserMemory());
+        const smartPrompt = systemPrompt || getSimpleSystemPrompt(model, this.config.getUserMemory(), undefined);
         if (smartPrompt) {
           requestParams.system = smartPrompt;
           
@@ -862,7 +862,7 @@ export class AnthropicClient {
       };
 
       // Use the smart prompt selector for streaming as well
-      const smartPrompt = systemPrompt || getSimpleSystemPrompt(model, this.config.getUserMemory());
+      const smartPrompt = systemPrompt || getSimpleSystemPrompt(model, this.config.getUserMemory(), undefined);
       if (smartPrompt) {
         requestParams.system = smartPrompt;
         // Force log the system prompt for streaming

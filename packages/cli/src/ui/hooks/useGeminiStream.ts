@@ -55,6 +55,8 @@ import {
   TrackedCancelledToolCall,
 } from './useReactToolScheduler.js';
 import { useSessionStats } from '../contexts/SessionContext.js';
+import { useTodoIntegration } from './useTodoIntegration.js';
+import { useTodo } from '../contexts/TodoContext.js';
 
 export function mergePartListUnions(list: PartListUnion[]): PartListUnion {
   const resultParts: PartListUnion = [];
@@ -103,6 +105,8 @@ export const useGeminiStream = (
   const [pendingHistoryItemRef, setPendingHistoryItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
+  const { processAIResponse } = useTodoIntegration();
+  const { getSystemPromptTodos } = useTodo();
   const { startNewPrompt, getPromptCount } = useSessionStats();
   const logger = useLogger();
   const gitService = useMemo(() => {
@@ -336,6 +340,7 @@ export const useGeminiStream = (
         // Prevents additional output after a user initiated cancel.
         return '';
       }
+      // 直接累积响应内容，不在流式传输过程中处理TODO
       let newGeminiMessageBuffer = currentGeminiMessageBuffer + eventValue;
       if (
         pendingHistoryItemRef.current?.type !== 'gemini' &&
@@ -381,7 +386,7 @@ export const useGeminiStream = (
       }
       return newGeminiMessageBuffer;
     },
-    [addItem, pendingHistoryItemRef, setPendingHistoryItem],
+    [addItem, pendingHistoryItemRef, setPendingHistoryItem, processAIResponse],
   );
 
   const handleUserCancelledEvent = useCallback(
@@ -415,7 +420,7 @@ export const useGeminiStream = (
       );
       setIsResponding(false);
     },
-    [addItem, pendingHistoryItemRef, setPendingHistoryItem],
+    [addItem, pendingHistoryItemRef, setPendingHistoryItem, processAIResponse],
   );
 
   const handleErrorEvent = useCallback(
@@ -643,10 +648,18 @@ export const useGeminiStream = (
       setInitError(null);
 
       try {
+        const todoPrompt = getSystemPromptTodos();
+        console.log('=== DEBUG: TODO Prompt being sent to system ===');
+        console.log('TODO Prompt length:', todoPrompt.length);
+        console.log('TODO Prompt content:', todoPrompt);
+        console.log('=== END DEBUG ===');
         const stream = geminiClient.sendMessageStream(
           queryToSend,
           abortSignal,
           prompt_id!,
+          undefined, // turns
+          undefined, // originalModel
+          todoPrompt,
         );
         const processingStatus = await processGeminiStreamEvents(
           stream,
@@ -659,6 +672,15 @@ export const useGeminiStream = (
         }
 
         if (pendingHistoryItemRef.current) {
+          // 在响应完成时处理TODO命令
+          if (pendingHistoryItemRef.current.type === 'gemini' || pendingHistoryItemRef.current.type === 'gemini_content') {
+            console.log('Processing TODO commands on response completion');
+            const processedText = processAIResponse(pendingHistoryItemRef.current.text);
+            pendingHistoryItemRef.current = {
+              ...pendingHistoryItemRef.current,
+              text: processedText
+            };
+          }
           addItem(pendingHistoryItemRef.current, userMessageTimestamp);
           setPendingHistoryItem(null);
         }

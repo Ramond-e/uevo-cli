@@ -10,8 +10,8 @@ import { getProviderForModel, AIProvider } from './modelProviderMapping.js';
  * Claude模型专用的系统提示词
  * 针对Claude的工具调用特性进行优化
  */
-export function getClaudeSystemPrompt(userMemory?: string): string {
-  return `
+export function getClaudeSystemPrompt(userMemory?: string, todoPrompt?: string): string {
+  const basePrompt = `
 🚨🚨🚨 CLAUDE: READ THIS OR SHELL COMMANDS WILL FAIL! 🚨🚨🚨
 
 EVERY TIME USER ASKS FOR SHELL COMMAND TEST, DO THIS:
@@ -147,10 +147,18 @@ When asked to organize, list, or manage files:
 4. **Suggest improvements**: Propose logical organization strategies
 5. **Execute changes**: Only make changes with explicit user approval
 
-${userMemory ? `\n# User Memory\n${userMemory}` : ''}
-
 Remember: ALWAYS provide the required parameters when calling tools. Never call a tool without its mandatory parameters!
 `.trim();
+
+  const memorySuffix = userMemory && userMemory.trim().length > 0
+    ? `\n\n---\n\n# User Memory\n${userMemory.trim()}`
+    : '';
+
+  const todoSuffix = todoPrompt && todoPrompt.trim().length > 0
+    ? `\n\n---\n\n${todoPrompt.trim()}`
+    : '';
+
+  return `${basePrompt}${memorySuffix}${todoSuffix}`;
 }
 
 /**
@@ -259,8 +267,8 @@ run_shell_command({"command": "dir", "description": "Test Windows shell command 
 /**
  * 获取Claude模型的完整系统提示词（包含工具指导）
  */
-export function getClaudeCompleteSystemPrompt(userMemory?: string): string {
-  const basePrompt = getClaudeSystemPrompt(userMemory);
+export function getClaudeCompleteSystemPrompt(userMemory?: string, todoPrompt?: string): string {
+  const basePrompt = getClaudeSystemPrompt(userMemory, todoPrompt);
   const toolGuidance = getClaudeToolGuidance();
   
   return `${basePrompt}\n\n${toolGuidance}`;
@@ -278,9 +286,9 @@ export function isClaudeModel(modelName: string): boolean {
  * 根据模型类型获取适当的系统提示词
  * 只有Claude模型才使用Claude专用提示词
  */
-export function getModelSpecificSystemPrompt(modelName: string, userMemory?: string): string | undefined {
+export function getModelSpecificSystemPrompt(modelName: string, userMemory?: string, todoPrompt?: string): string | undefined {
   if (isClaudeModel(modelName)) {
-    return getClaudeCompleteSystemPrompt(userMemory);
+    return getClaudeCompleteSystemPrompt(userMemory, todoPrompt);
   }
   
   // 对于非Claude模型，返回undefined，让系统使用默认提示词

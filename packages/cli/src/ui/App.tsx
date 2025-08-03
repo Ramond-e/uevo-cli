@@ -69,6 +69,7 @@ import {
   SessionStatsProvider,
   useSessionStats,
 } from './contexts/SessionContext.js';
+import { TodoProvider } from './contexts/TodoContext.js';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useFocus } from './hooks/useFocus.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
@@ -85,6 +86,7 @@ import ansiEscapes from 'ansi-escapes';
 import { OverflowProvider } from './contexts/OverflowContext.js';
 import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
+import { TodoList } from './components/TodoList.js';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
@@ -96,9 +98,11 @@ interface AppProps {
 }
 
 export const AppWrapper = (props: AppProps) => (
-  <SessionStatsProvider>
-    <App {...props} />
-  </SessionStatsProvider>
+  <TodoProvider>
+    <SessionStatsProvider>
+      <App {...props} />
+    </SessionStatsProvider>
+  </TodoProvider>
 );
 
 const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
@@ -740,6 +744,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         >
           {(item) => item}
         </Static>
+        <TodoList terminalWidth={mainAreaWidth} maxHeight={8} />
         <OverflowProvider>
           <Box ref={pendingHistoryItemRef} flexDirection="column">
             {pendingHistoryItems.map((item, i) => (
