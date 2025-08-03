@@ -139,6 +139,15 @@ export type FlashFallbackHandler = (
   error?: unknown,
 ) => Promise<boolean | string | null>;
 
+export interface TrustedDirsConfig {
+  /** List of directories where all tool operations are trusted */
+  directories: string[];
+  /** Whether to recursively trust subdirectories */
+  recursive?: boolean;
+  /** Description for logging/debugging purposes */
+  description?: string;
+}
+
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -182,6 +191,7 @@ export interface ConfigParameters {
   summarizeToolOutput?: Record<string, SummarizeToolOutputSettings>;
   ideMode?: boolean;
   anthropicApiKey?: string;
+  trustedDirs?: TrustedDirsConfig;
 }
 
 export class Config {
@@ -238,7 +248,6 @@ export class Config {
     | undefined;
   private readonly experimentalAcp: boolean = false;
   private anthropicApiKey: string | undefined;
-  private geminiClient?: GeminiClient;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -291,6 +300,7 @@ export class Config {
     this.summarizeToolOutput = params.summarizeToolOutput;
     this.ideMode = params.ideMode ?? false;
     this.anthropicApiKey = params.anthropicApiKey;
+    this.trustedDirs = params.trustedDirs;
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -723,6 +733,9 @@ export class Config {
   setAnthropicApiKey(apiKey: string): void {
     this.anthropicApiKey = apiKey;
   }
+
+  private geminiClient?: GeminiClient;
+  // private smartAIClient?: any; // 不再使用SmartAIClient
 }
 
 // Export model constants for use in CLI

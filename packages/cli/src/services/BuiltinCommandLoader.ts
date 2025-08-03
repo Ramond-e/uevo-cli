@@ -27,6 +27,7 @@ import { quitCommand } from '../ui/commands/quitCommand.js';
 import { restoreCommand } from '../ui/commands/restoreCommand.js';
 import { rulesCommand } from '../ui/commands/rulesCommand.js';
 import { statsCommand } from '../ui/commands/statsCommand.js';
+import { testspaceCommand } from '../ui/commands/testspaceCommand.js';
 import { themeCommand } from '../ui/commands/themeCommand.js';
 import { toolsCommand } from '../ui/commands/toolsCommand.js';
 import { debugTodoCommand } from '../ui/commands/debugTodoCommand.js';
@@ -34,6 +35,7 @@ import { testTodoCommand } from '../ui/commands/testTodoCommand.js';
 import { todoCommand } from '../ui/commands/todoCommand.js';
 import { apiCommand } from '../ui/commands/apiCommand.js';
 import { modelCommand } from '../ui/commands/newModelCommand.js';
+import { trustCommand } from '../ui/commands/trustCommand.js';
 
 /**
  * Loads the core, hard-coded slash commands that are an integral part
@@ -74,10 +76,12 @@ export class BuiltinCommandLoader implements ICommandLoader {
       restoreCommand(this.config),
       rulesCommand,
       statsCommand,
+      testspaceCommand,
       testTodoCommand,
       themeCommand,
       todoCommand,
       toolsCommand,
+      trustCommand,
     ];
 
     return allDefinitions.filter((cmd): cmd is SlashCommand => cmd !== null);

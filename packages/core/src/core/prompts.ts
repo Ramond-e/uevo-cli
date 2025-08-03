@@ -21,6 +21,48 @@ import { MemoryTool, GEMINI_CONFIG_DIR } from '../tools/memoryTool.js';
 import { mergeWithTodoPrompt } from './todoPrompts.js';
 
 /**
+ * 获取工具工作空间路径
+ */
+function getToolWorkspacePath(): string {
+  // 首先检查环境变量
+  const workspaceEnv = process.env.UEVO_TESTSPACE;
+  if (workspaceEnv) {
+    if (workspaceEnv.startsWith('~/')) {
+      return path.join(os.homedir(), workspaceEnv.slice(2));
+    } else if (workspaceEnv === '~') {
+      return os.homedir();
+    }
+    return path.resolve(workspaceEnv);
+  }
+  
+  // 如果环境变量未设置，尝试从配置文件读取
+  try {
+    const homeDir = os.homedir();
+    const envFilePath = path.join(homeDir, '.uevo', '.uevo-env');
+    if (fs.existsSync(envFilePath)) {
+      const content = fs.readFileSync(envFilePath, 'utf-8');
+      if (content.trim()) {
+        const config = JSON.parse(content);
+        const storedPath = config.UEVO_TESTSPACE;
+        if (storedPath) {
+          if (storedPath.startsWith('~/')) {
+            return path.join(os.homedir(), storedPath.slice(2));
+          } else if (storedPath === '~') {
+            return os.homedir();
+          }
+          return path.resolve(storedPath);
+        }
+      }
+    }
+  } catch {
+    // 忽略读取配置文件的错误，使用默认值
+  }
+  
+  // 默认路径：~/uevo/testspace
+  return path.join(os.homedir(), 'uevo', 'testspace');
+}
+
+/**
  * 获取用户自定义规则
  */
 function getUserRules(): { systemRule: string | null; userRules: string[] } {
@@ -155,6 +197,40 @@ When requested to perform tasks like fixing bugs, adding features, refactoring, 
 5. **Verify:** Review work against the original request, the approved plan. Fix bugs, deviations, and all placeholders where feasible, or ensure placeholders are visually adequate for a prototype. Ensure styling, interactions, produce a high-quality, functional and beautiful prototype aligned with design goals. Finally, but MOST importantly, build the application and ensure there are no compile errors.
 6. **Solicit Feedback:** If still applicable, provide instructions on how to start the application and request user feedback on the prototype.
 
+## Tool Development & Automation Workflow
+
+**Goal:** When encountering problems beyond current capabilities, extend solutions by searching, acquiring, and adapting existing open-source tools.
+
+1. **Problem Decomposition & Search:** 
+   - Break down complex problems into specific technical requirements
+   - Search GitHub for relevant open-source tools and solutions
+   - Prioritize Python ecosystem tools as preferred solutions
+
+2. **Tool Acquisition & Environment Setup:**
+   - Use \`git clone\` to download selected tools to the configured workspace directory (current: \`${getToolWorkspacePath()}\`, customizable via \`UEVO_TESTSPACE\` environment variable)
+   - Enter project directory and first read \`README.md\` to understand project basics and usage
+   - Create new conda environment: \`conda create -n <tool_env> python=3.x\`
+   - Install dependencies based on project files: \`pip install -r requirements.txt\` or \`conda install\`
+
+3. **Tool Adaptation & Optimization:**
+   - Analyze original tool's input/output methods (GUI, interactive, etc.)
+   - Transform graphical or interactive inputs to command-line parameter approach
+   - Ensure adapted tool supports shell command invocation: \`python tool.py --param1 value1 --param2 value2\`
+   - Rename adapted script to \`uevoTools_<tool_name>.py\`
+
+4. **Deployment & Documentation:**
+   - Place adapted tool in the workspace \`<project_name>/\` directory
+   - Create \`<tool_name>.md\` documentation in the workspace \`<project_name>/docs/\` directory
+   - Document tool capabilities, usage methods, and command-line parameters
+   - Provide practical examples showing complete command-line invocation
+
+5. **Verification & Testing:**
+   - Test functional completeness of adapted tool
+   - Verify stability and usability of command-line interface
+   - Ensure seamless integration into existing workflows
+
+This workflow replaces simple inability responses with proactive capability extension strategies.
+
 # Operational Guidelines
 
 ## Tone and Style (CLI Interaction)
@@ -164,7 +240,7 @@ When requested to perform tasks like fixing bugs, adding features, refactoring, 
 - **No Chitchat:** Avoid conversational filler, preambles ("Okay, I will now..."), or postambles ("I have finished the changes..."). Get straight to the action or answer.
 - **Formatting:** Use GitHub-flavored Markdown. Responses will be rendered in monospace.
 - **Tools vs. Text:** Use tools for actions, text output *only* for communication. Do not add explanatory comments within tool calls or code blocks unless specifically part of the required code/command itself.
-- **Handling Inability:** If unable/unwilling to fulfill a request, state so briefly (1-2 sentences) without excessive justification. Offer alternatives if appropriate.
+- **Capability Extension:** When encountering problems beyond current capabilities, apply the Tool Development & Automation Workflow to search for and adapt existing solutions rather than simply stating inability. Only declare inability after exhausting extension options.
 
 ## Security and Safety Rules
 - **Explain Critical Commands:** Before executing commands with '${ShellTool.Name}' that modify the file system, codebase, or system state, you *must* provide a brief explanation of the command's purpose and potential impact. Prioritize user understanding and safety. You should not ask permission to use the tool; the user will be presented with a confirmation dialogue upon use (you do not need to tell them this).

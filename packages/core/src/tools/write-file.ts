@@ -149,6 +149,11 @@ export class WriteFileTool
       return false;
     }
 
+    // 如果文件在可信目录中，跳过确认
+    if (this.config.isPathInTrustedDirs(params.file_path)) {
+      return false; // 不需要确认
+    }
+
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return false;

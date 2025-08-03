@@ -187,6 +187,14 @@ export class ClaudeShellTool extends BaseTool<ClaudeShellToolParams, ToolResult>
    * 比标准shell工具更宽松，专门处理Claude的常见问题
    */
   isCommandAllowed(command: string): { allowed: boolean; reason?: string } {
+    // 如果当前目录在可信目录中，允许所有命令
+    if (this.config.isCurrentDirTrusted()) {
+      return { 
+        allowed: true, 
+        reason: 'Command allowed in trusted directory' 
+      };
+    }
+
     // 确保command是有效的字符串
     if (!command || typeof command !== 'string') {
       return {
