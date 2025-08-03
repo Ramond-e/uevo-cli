@@ -18,7 +18,7 @@ import { WriteFileTool } from '../tools/write-file.js';
 import process from 'node:process';
 import { isGitRepository } from '../utils/gitUtils.js';
 import { MemoryTool, GEMINI_CONFIG_DIR } from '../tools/memoryTool.js';
-import { mergeWithTodoPrompt } from './todoPrompts.js';
+
 
 /**
  * 获取工具工作空间路径
@@ -432,15 +432,12 @@ Your core function is efficient and safe assistance. Balance extreme conciseness
       ? `\n\n---\n\n${userMemory.trim()}`
       : '';
 
-  // 合并TODO管理提示词
-  const promptWithTodo = mergeWithTodoPrompt(basePrompt);
-
   // 获取用户自定义规则
   const rulesData = getUserRules();
   // 将用户规则格式化为系统提示词的一部分
   const userRulesPrompt = formatUserRulesForPrompt(rulesData);
 
-  return `${promptWithTodo}${userRulesPrompt}${memorySuffix}`;
+  return `${basePrompt}${userRulesPrompt}${memorySuffix}`;
 }
 
 /**

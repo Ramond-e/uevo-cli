@@ -48,9 +48,7 @@ import { HistoryItemDisplay } from './components/HistoryItemDisplay.js';
 import { ContextSummaryDisplay } from './components/ContextSummaryDisplay.js';
 import { useHistory } from './hooks/useHistoryManager.js';
 import process from 'node:process';
-import { useTodoManager } from './hooks/useTodoManager.js';
-import { TodoListDisplay } from './components/TodoListDisplay.js';
-import { useGeminiStreamWithTodo } from './hooks/useGeminiStreamWithTodo.js';
+
 import {
   getErrorMessage,
   type Config,
@@ -227,9 +225,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     setCorgiMode((prev) => !prev);
   }, []);
 
-  // TODO管理器
-  const todoManager = useTodoManager();
-  const { currentTodoList } = todoManager;
+
 
   const performMemoryRefresh = useCallback(async () => {
     addItem(
@@ -513,13 +509,13 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     initError,
     pendingHistoryItems: pendingGeminiHistoryItems,
     thought,
-  } = useGeminiStreamWithTodo({
-    geminiClient: config.getAIClient(),
+  } = useGeminiStream(
+    config.getAIClient(),
     history,
     addItem,
     setShowHelp,
     config,
-    onDebugMessage: setDebugMessage,
+    setDebugMessage,
     handleSlashCommand,
     shellModeActive,
     getPreferredEditor,
@@ -527,8 +523,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     performMemoryRefresh,
     modelSwitchedFromQuotaError,
     setModelSwitchedFromQuotaError,
-    todoManager,
-  });
+  );
   pendingHistoryItems.push(...pendingGeminiHistoryItems);
   const { elapsedTime, currentLoadingPhrase } =
     useLoadingIndicator(streamingState);
@@ -856,8 +851,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
             />
           ) : (
             <>
-              {/* TODO列表显示 */}
-              <TodoListDisplay todoList={currentTodoList} />
+
               
               <LoadingIndicator
                 thought={
