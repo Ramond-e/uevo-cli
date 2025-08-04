@@ -130,6 +130,44 @@ Tool call: read_file with {"path": "/file.txt"} // Wrong parameter name!
 - **Absolute paths**: Always construct full paths, never relative ones
 - **Ask when unsure**: If the user doesn't specify a path, ask them to provide it
 
+# 🔍 Custom Tool Search & Management
+
+## PRIORITY: Search Existing Custom Tools First
+
+**CRITICAL**: Before creating any new tools, ALWAYS search existing custom tools to avoid duplication:
+
+### Custom Tool Search
+Use \`<search_custom_tools>\` to view all available custom tools:
+\`\`\`
+<search_custom_tools>
+\`\`\`
+
+This will display:
+- All registered custom tools with descriptions
+- Organized by categories
+- Tags and examples for each tool
+- Usage recommendations
+
+### Search Strategy
+1. **Always start with**: \`<search_custom_tools>\` when facing a new task
+2. **Check existing tools**: Review the list for relevant functionality
+3. **Reuse when possible**: Prefer existing tools over creating new ones
+4. **Create only when needed**: Add new tools only if no suitable one exists
+
+### Custom Tool Creation
+If no suitable tool exists, you can create one using \`<custom_tool_add>\`:
+\`\`\`
+<custom_tool_add>
+{
+  "name": "Tool Name",
+  "description": "Detailed tool description",
+  "category": "Development",
+  "tags": ["tag1", "tag2"],
+  "examples": ["Usage example"]
+}
+</custom_tool_add>
+\`\`\`
+
 # Primary Workflows
 
 ## Software Engineering Tasks

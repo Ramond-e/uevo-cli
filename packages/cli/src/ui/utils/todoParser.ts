@@ -22,10 +22,11 @@ export class TodoParser {
   /**
    * 解析AI响应文本，提取所有TODO命令
    * @param text AI的响应文本
-   * @returns 解析出的TODO命令数组
+   * @returns 解析出的TODO命令数组和对应的源字符串数组
    */
-  static parseResponse(text: string): TodoCommand[] {
+  static parseResponse(text: string): { commands: TodoCommand[], sources: string[] } {
     const commands: TodoCommand[] = [];
+    const sources: string[] = [];
     
     // 解析创建TODO命令
     const createMatches = [...text.matchAll(this.TODO_PATTERNS.CREATE)];
@@ -38,6 +39,7 @@ export class TodoParser {
           id,
           content
         });
+        sources.push(match[0]);
       }
     }
 
@@ -52,6 +54,7 @@ export class TodoParser {
           id,
           content
         });
+        sources.push(match[0]);
       }
     }
 
@@ -63,9 +66,10 @@ export class TodoParser {
         type: 'finish_todo',
         id
       });
+      sources.push(match[0]);
     }
 
-    return commands;
+    return { commands, sources };
   }
 
   /**

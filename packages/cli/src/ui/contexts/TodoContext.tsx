@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useRef, ReactNode } from 'react';
 import { TodoState, TodoAction, TodoActionType, TodoStatus, TodoTask } from '../types/todo.js';
 
 /**
@@ -12,12 +12,11 @@ import { TodoState, TodoAction, TodoActionType, TodoStatus, TodoTask } from '../
  */
 interface TodoContextType {
   state: TodoState;
-  createTodo: (content: string) => number;
+  createTodo: (content: string, specifiedId?: number) => number;
   updateTodo: (id: number, content: string) => void;
   finishTodo: (id: number) => void;
   toggleVisibility: () => void;
   clearAll: () => void;
-  getTodoList: () => TodoTask[];
   getSystemPromptTodos: () => string;
 }
 
@@ -26,7 +25,6 @@ interface TodoContextType {
  */
 const initialState: TodoState = {
   tasks: [],
-  nextId: 1,
   isVisible: false
 };
 
@@ -36,26 +34,20 @@ const initialState: TodoState = {
 function todoReducer(state: TodoState, action: TodoAction): TodoState {
   switch (action.type) {
     case TodoActionType.CREATE_TODO:
-      if (!action.payload?.content) return state;
+      if (!action.payload?.content || !action.payload?.id) return state;
       
       const newTask: TodoTask = {
-        id: state.nextId,
+        id: action.payload.id,
         content: action.payload.content,
         status: TodoStatus.PENDING,
         createdAt: new Date()
       };
       
-      console.log('Reducer - Creating TODO:', { newTask, oldState: state });
-      
-      const newState = {
+      return {
         ...state,
         tasks: [...state.tasks, newTask],
-        nextId: state.nextId + 1,
         isVisible: true
       };
-      
-      console.log('Reducer - New state after TODO creation:', newState);
-      return newState;
 
     case TodoActionType.UPDATE_TODO:
       if (!action.payload?.id || !action.payload?.content) return state;
@@ -90,8 +82,7 @@ function todoReducer(state: TodoState, action: TodoAction): TodoState {
     case TodoActionType.CLEAR_ALL:
       return {
         ...state,
-        tasks: [],
-        nextId: 1
+        tasks: []
       };
 
     default:
@@ -113,21 +104,25 @@ interface TodoProviderProps {
 
 export function TodoProvider({ children }: TodoProviderProps) {
   const [state, dispatch] = useReducer(todoReducer, initialState);
+  const nextIdRef = useRef(1);
 
-  const createTodo = useCallback((content: string): number => {
-    const id = state.nextId;
-    console.log('Creating TODO function called:', { content, id, currentStateTasksLength: state.tasks.length, currentStateVisible: state.isVisible });
-    dispatch({ type: TodoActionType.CREATE_TODO, payload: { content } });
-    console.log('Dispatch called for CREATE_TODO');
+  const createTodo = useCallback((content: string, specifiedId?: number): number => {
+    const id = specifiedId || nextIdRef.current;
+    dispatch({ type: TodoActionType.CREATE_TODO, payload: { content, id } });
+    if (!specifiedId) {
+      nextIdRef.current += 1;
+    } else {
+      // 确保nextId不会与指定的ID冲突
+      nextIdRef.current = Math.max(nextIdRef.current, id + 1);
+    }
     return id;
-  }, [state.nextId]);
+  }, []);
 
   const updateTodo = useCallback((id: number, content: string) => {
     dispatch({ type: TodoActionType.UPDATE_TODO, payload: { id, content } });
   }, []);
 
   const finishTodo = useCallback((id: number) => {
-    console.log('Finishing TODO:', { id, currentState: state });
     dispatch({ type: TodoActionType.FINISH_TODO, payload: { id } });
   }, []);
 
@@ -137,11 +132,8 @@ export function TodoProvider({ children }: TodoProviderProps) {
 
   const clearAll = useCallback(() => {
     dispatch({ type: TodoActionType.CLEAR_ALL });
+    nextIdRef.current = 1;
   }, []);
-
-  const getTodoList = useCallback((): TodoTask[] => {
-    return state.tasks;
-  }, [state.tasks]);
 
   const getSystemPromptTodos = useCallback((): string => {
     if (state.tasks.length === 0) return '';
@@ -181,7 +173,6 @@ ${todoList}
     finishTodo,
     toggleVisibility,
     clearAll,
-    getTodoList,
     getSystemPromptTodos
   };
 

@@ -67,21 +67,9 @@ export const TodoList: React.FC<TodoListProps> = ({
   terminalWidth, 
   maxHeight = 10 
 }) => {
-  const { state, getTodoList } = useTodo();
+  const { state } = useTodo();
   
-  // 强制显示调试信息
-  console.log('TodoList render debug:', {
-    isVisible: state.isVisible,
-    tasksLength: state.tasks.length,
-    tasks: state.tasks,
-    terminalWidth,
-    maxHeight
-  });
-  
-  // 始终显示TODO列表，即使没有任务时也显示
-  console.log('TODO List IS rendering - always visible');
-  
-  const tasks = getTodoList();
+  const tasks = state.tasks;
   const borderColor = Colors.AccentCyan;
   const titleColor = Colors.Foreground;
   
