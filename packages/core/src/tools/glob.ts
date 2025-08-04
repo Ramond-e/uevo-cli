@@ -130,8 +130,12 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
       params.path || '.',
     );
 
-    if (!isWithinRoot(searchDirAbsolute, this.config.getTargetDir())) {
-      return `Search path ("${searchDirAbsolute}") resolves outside the tool's root directory ("${this.config.getTargetDir()}").`;
+    // Check if path is within root directory or in trusted directories
+    const isInRoot = isWithinRoot(searchDirAbsolute, this.config.getTargetDir());
+    const isInTrustedDirs = this.config.isPathInTrustedDirs(searchDirAbsolute);
+    
+    if (!isInRoot && !isInTrustedDirs) {
+      return `Search path ("${searchDirAbsolute}") resolves outside the tool's root directory ("${this.config.getTargetDir()}") and is not in a trusted directory.`;
     }
 
     const targetDir = searchDirAbsolute || this.config.getTargetDir();

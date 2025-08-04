@@ -34,8 +34,6 @@ export interface TodoTask {
 export interface TodoState {
   /** 任务列表 */
   tasks: TodoTask[];
-  /** 下一个任务ID */
-  nextId: number;
   /** 是否显示TODO面板 */
   isVisible: boolean;
 }

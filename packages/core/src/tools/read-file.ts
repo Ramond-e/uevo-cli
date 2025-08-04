@@ -86,8 +86,13 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
     if (!path.isAbsolute(filePath)) {
       return `File path must be absolute, but was relative: ${filePath}. You must provide an absolute path.`;
     }
-    if (!isWithinRoot(filePath, this.config.getTargetDir())) {
-      return `File path must be within the root directory (${this.config.getTargetDir()}): ${filePath}`;
+    
+    // Check if path is within root directory or in trusted directories
+    const isInRoot = isWithinRoot(filePath, this.config.getTargetDir());
+    const isInTrustedDirs = this.config.isPathInTrustedDirs(filePath);
+    
+    if (!isInRoot && !isInTrustedDirs) {
+      return `File path must be within the root directory (${this.config.getTargetDir()}) or in a trusted directory: ${filePath}`;
     }
     if (params.offset !== undefined && params.offset < 0) {
       return 'Offset must be a non-negative number';

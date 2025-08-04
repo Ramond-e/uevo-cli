@@ -70,6 +70,7 @@ import {
   useSessionStats,
 } from './contexts/SessionContext.js';
 import { TodoProvider } from './contexts/TodoContext.js';
+import { CustomToolProvider } from './contexts/CustomToolContext.js';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useFocus } from './hooks/useFocus.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
@@ -87,6 +88,7 @@ import { OverflowProvider } from './contexts/OverflowContext.js';
 import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
 import { TodoList } from './components/TodoList.js';
+import { CustomToolAddConfirmationMessage } from './components/messages/CustomToolAddConfirmationMessage.js';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
@@ -99,9 +101,11 @@ interface AppProps {
 
 export const AppWrapper = (props: AppProps) => (
   <TodoProvider>
-    <SessionStatsProvider>
-      <App {...props} />
-    </SessionStatsProvider>
+    <CustomToolProvider>
+      <SessionStatsProvider>
+        <App {...props} />
+      </SessionStatsProvider>
+    </CustomToolProvider>
   </TodoProvider>
 );
 
@@ -513,6 +517,11 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     initError,
     pendingHistoryItems: pendingGeminiHistoryItems,
     thought,
+    // Custom Tool Integration
+    pendingToolAdd,
+    showCustomToolConfirmation,
+    handleCustomToolConfirmation,
+    cancelCustomToolConfirmation,
   } = useGeminiStream(
     config.getAIClient(),
     history,
@@ -744,7 +753,17 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         >
           {(item) => item}
         </Static>
-        <TodoList terminalWidth={mainAreaWidth} maxHeight={8} />
+                    <TodoList terminalWidth={mainAreaWidth} maxHeight={8} />
+            
+            {/* Custom Tool Confirmation Window */}
+            {showCustomToolConfirmation && pendingToolAdd && (
+              <CustomToolAddConfirmationMessage
+                toolDetails={pendingToolAdd}
+                isFocused={isFocused}
+                terminalWidth={mainAreaWidth}
+                onConfirm={handleCustomToolConfirmation}
+              />
+            )}
         <OverflowProvider>
           <Box ref={pendingHistoryItemRef} flexDirection="column">
             {pendingHistoryItems.map((item, i) => (

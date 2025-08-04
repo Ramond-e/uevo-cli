@@ -57,6 +57,7 @@ import {
 import { useSessionStats } from '../contexts/SessionContext.js';
 import { useTodoIntegration } from './useTodoIntegration.js';
 import { useTodo } from '../contexts/TodoContext.js';
+import { useCustomToolIntegration } from './useCustomToolIntegration.js';
 
 export function mergePartListUnions(list: PartListUnion[]): PartListUnion {
   const resultParts: PartListUnion = [];
@@ -105,8 +106,16 @@ export const useGeminiStream = (
   const [pendingHistoryItemRef, setPendingHistoryItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
-  const { processAIResponse } = useTodoIntegration();
+  const { processIncrementalAIResponse, cleanFinalResponse } = useTodoIntegration();
+  const processedTodoCommandsRef = useRef(new Set<string>());
   const { getSystemPromptTodos } = useTodo();
+  const { 
+    processAIResponse: processCustomToolResponse,
+    pendingToolAdd,
+    showConfirmation: showCustomToolConfirmation,
+    handleConfirmation: handleCustomToolConfirmation,
+    cancelConfirmation: cancelCustomToolConfirmation
+  } = useCustomToolIntegration();
   const { startNewPrompt, getPromptCount } = useSessionStats();
   const logger = useLogger();
   const gitService = useMemo(() => {
@@ -340,8 +349,15 @@ export const useGeminiStream = (
         // Prevents additional output after a user initiated cancel.
         return '';
       }
-      // 直接累积响应内容，不在流式传输过程中处理TODO
+      
       let newGeminiMessageBuffer = currentGeminiMessageBuffer + eventValue;
+      
+      // 增量处理TODO命令
+      processedTodoCommandsRef.current = processIncrementalAIResponse(
+        newGeminiMessageBuffer, 
+        processedTodoCommandsRef.current
+      );
+
       if (
         pendingHistoryItemRef.current?.type !== 'gemini' &&
         pendingHistoryItemRef.current?.type !== 'gemini_content'
@@ -352,24 +368,14 @@ export const useGeminiStream = (
         setPendingHistoryItem({ type: 'gemini', text: '' });
         newGeminiMessageBuffer = eventValue;
       }
-      // Split large messages for better rendering performance. Ideally,
-      // we should maximize the amount of output sent to <Static />.
+      
       const splitPoint = findLastSafeSplitPoint(newGeminiMessageBuffer);
       if (splitPoint === newGeminiMessageBuffer.length) {
-        // Update the existing message with accumulated content
         setPendingHistoryItem((item) => ({
           type: item?.type as 'gemini' | 'gemini_content',
           text: newGeminiMessageBuffer,
         }));
       } else {
-        // This indicates that we need to split up this Gemini Message.
-        // Splitting a message is primarily a performance consideration. There is a
-        // <Static> component at the root of App.tsx which takes care of rendering
-        // content statically or dynamically. Everything but the last message is
-        // treated as static in order to prevent re-rendering an entire message history
-        // multiple times per-second (as streaming occurs). Prior to this change you'd
-        // see heavy flickering of the terminal. This ensures that larger messages get
-        // broken up so that there are more "statically" rendered.
         const beforeText = newGeminiMessageBuffer.substring(0, splitPoint);
         const afterText = newGeminiMessageBuffer.substring(splitPoint);
         addItem(
@@ -386,7 +392,7 @@ export const useGeminiStream = (
       }
       return newGeminiMessageBuffer;
     },
-    [addItem, pendingHistoryItemRef, setPendingHistoryItem, processAIResponse],
+    [addItem, pendingHistoryItemRef, setPendingHistoryItem, processIncrementalAIResponse],
   );
 
   const handleUserCancelledEvent = useCallback(
@@ -420,7 +426,7 @@ export const useGeminiStream = (
       );
       setIsResponding(false);
     },
-    [addItem, pendingHistoryItemRef, setPendingHistoryItem, processAIResponse],
+    [addItem, pendingHistoryItemRef, setPendingHistoryItem],
   );
 
   const handleErrorEvent = useCallback(
@@ -624,6 +630,7 @@ export const useGeminiStream = (
       abortControllerRef.current = new AbortController();
       const abortSignal = abortControllerRef.current.signal;
       turnCancelledRef.current = false;
+      processedTodoCommandsRef.current.clear(); // 清空已处理的TODO命令
 
       if (!prompt_id) {
         prompt_id = config.getSessionId() + '########' + getPromptCount();
@@ -649,16 +656,11 @@ export const useGeminiStream = (
 
       try {
         const todoPrompt = getSystemPromptTodos();
-        console.log('=== DEBUG: TODO Prompt being sent to system ===');
-        console.log('TODO Prompt length:', todoPrompt.length);
-        console.log('TODO Prompt content:', todoPrompt);
-        console.log('=== END DEBUG ===');
         const stream = geminiClient.sendMessageStream(
           queryToSend,
           abortSignal,
           prompt_id!,
           undefined, // turns
-          undefined, // originalModel
           todoPrompt,
         );
         const processingStatus = await processGeminiStreamEvents(
@@ -672,10 +674,9 @@ export const useGeminiStream = (
         }
 
         if (pendingHistoryItemRef.current) {
-          // 在响应完成时处理TODO命令
           if (pendingHistoryItemRef.current.type === 'gemini' || pendingHistoryItemRef.current.type === 'gemini_content') {
-            console.log('Processing TODO commands on response completion');
-            const processedText = processAIResponse(pendingHistoryItemRef.current.text);
+            let processedText = cleanFinalResponse(pendingHistoryItemRef.current.text);
+            processedText = processCustomToolResponse(processedText);
             pendingHistoryItemRef.current = {
               ...pendingHistoryItemRef.current,
               text: processedText
@@ -726,6 +727,8 @@ export const useGeminiStream = (
       startNewPrompt,
       getPromptCount,
       handleLoopDetectedEvent,
+      cleanFinalResponse,
+      processCustomToolResponse,
     ],
   );
 
@@ -972,5 +975,10 @@ export const useGeminiStream = (
     initError,
     pendingHistoryItems,
     thought,
+    // Custom Tool Integration
+    pendingToolAdd,
+    showCustomToolConfirmation,
+    handleCustomToolConfirmation,
+    cancelCustomToolConfirmation,
   };
 };

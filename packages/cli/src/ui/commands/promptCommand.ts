@@ -16,14 +16,12 @@ import {
   getCompressionPrompt,
   getProviderForModel,
   AIProvider,
-} from '@uevo/uevo-cli-core';
-import {
   getRecommendedTemplate,
   getSimpleSystemPrompt,
   getAllTemplates,
   PROMPT_TEMPLATES,
   type PromptTemplate,
-} from '../../../../core/src/core/promptTemplates.js';
+} from '@uevo/uevo-cli-core';
 
 const COLOR_GREEN = '\u001b[32m';
 const COLOR_YELLOW = '\u001b[33m';

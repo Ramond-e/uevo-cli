@@ -105,8 +105,13 @@ export class WriteFileTool
     if (!path.isAbsolute(filePath)) {
       return `File path must be absolute: ${filePath}`;
     }
-    if (!isWithinRoot(filePath, this.config.getTargetDir())) {
-      return `File path must be within the root directory (${this.config.getTargetDir()}): ${filePath}`;
+    
+    // Check if path is within root directory or in trusted directories
+    const isInRoot = isWithinRoot(filePath, this.config.getTargetDir());
+    const isInTrustedDirs = this.config.isPathInTrustedDirs(filePath);
+    
+    if (!isInRoot && !isInTrustedDirs) {
+      return `File path must be within the root directory (${this.config.getTargetDir()}) or in a trusted directory: ${filePath}`;
     }
 
     try {
