@@ -33,8 +33,10 @@ import { toolsCommand } from '../ui/commands/toolsCommand.js';
 
 import { apiCommand } from '../ui/commands/apiCommand.js';
 import { modelCommand } from '../ui/commands/newModelCommand.js';
+import { promptCommand } from '../ui/commands/promptCommand.js';
 import { trustCommand } from '../ui/commands/trustCommand.js';
 import { todoCommand } from '../ui/commands/todoCommand.js';
+import { customToolsCommand } from '../ui/commands/customToolsCommand.js';
 
 /**
  * Loads the core, hard-coded slash commands that are an integral part
@@ -70,6 +72,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       memoryCommand,
       modelCommand,
       privacyCommand,
+      promptCommand,
       quitCommand,
       restoreCommand(this.config),
       rulesCommand,
@@ -79,6 +82,7 @@ export class BuiltinCommandLoader implements ICommandLoader {
       todoCommand,
       toolsCommand,
       trustCommand,
+      customToolsCommand,
     ];
 
     return allDefinitions.filter((cmd): cmd is SlashCommand => cmd !== null);

@@ -137,8 +137,12 @@ Expectation for required parameters:
       return `File path must be absolute: ${params.file_path}`;
     }
 
-    if (!isWithinRoot(params.file_path, this.config.getTargetDir())) {
-      return `File path must be within the root directory (${this.config.getTargetDir()}): ${params.file_path}`;
+    // Check if path is within root directory or in trusted directories
+    const isInRoot = isWithinRoot(params.file_path, this.config.getTargetDir());
+    const isInTrustedDirs = this.config.isPathInTrustedDirs(params.file_path);
+    
+    if (!isInRoot && !isInTrustedDirs) {
+      return `File path must be within the root directory (${this.config.getTargetDir()}) or in a trusted directory: ${params.file_path}`;
     }
 
     return null;

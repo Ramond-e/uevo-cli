@@ -129,8 +129,13 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
     if (!path.isAbsolute(params.path)) {
       return `Path must be absolute: ${params.path}`;
     }
-    if (!isWithinRoot(params.path, this.config.getTargetDir())) {
-      return `Path must be within the root directory (${this.config.getTargetDir()}): ${params.path}`;
+    
+    // Check if path is within root directory or in trusted directories
+    const isInRoot = isWithinRoot(params.path, this.config.getTargetDir());
+    const isInTrustedDirs = this.config.isPathInTrustedDirs(params.path);
+    
+    if (!isInRoot && !isInTrustedDirs) {
+      return `Path must be within the root directory (${this.config.getTargetDir()}) or in a trusted directory: ${params.path}`;
     }
     return null;
   }

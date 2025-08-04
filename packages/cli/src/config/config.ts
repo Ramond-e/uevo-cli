@@ -29,30 +29,53 @@ import { Settings } from './settings.js';
 import { Extension, annotateActiveExtensions } from './extension.js';
 import { getCliVersion } from '../utils/version.js';
 import { loadSandboxConfig } from './sandboxConfig.js';
+import { getToolWorkspacePath } from '@uevo/uevo-cli-core';
 
 /**
  * 从设置和环境变量加载可信目录配置
+ * 自动将testspace路径添加到受信路径中
  */
 function loadTrustedDirsConfig(settings: Settings): TrustedDirsConfig | undefined {
+  // 获取testspace路径
+  const testspacePath = getToolWorkspacePath();
+  
   // 优先从环境变量读取 UEVO_TRUSTED_DIRS
   const envTrustedDirs = process.env.UEVO_TRUSTED_DIRS;
   if (envTrustedDirs) {
     const directories = envTrustedDirs.split(path.delimiter).filter(dir => dir.trim());
     if (directories.length > 0) {
+      // 如果testspace路径不在列表中，则添加它
+      if (!directories.includes(testspacePath)) {
+        directories.push(testspacePath);
+      }
       return {
         directories,
         recursive: true,
-        description: 'Loaded from UEVO_TRUSTED_DIRS environment variable'
+        description: 'Loaded from UEVO_TRUSTED_DIRS environment variable (including testspace)'
       };
     }
   }
 
   // 从设置文件读取
   if (settings.trustedDirs) {
-    return settings.trustedDirs;
+    const directories = [...settings.trustedDirs.directories];
+    // 如果testspace路径不在列表中，则添加它
+    if (!directories.includes(testspacePath)) {
+      directories.push(testspacePath);
+    }
+    return {
+      ...settings.trustedDirs,
+      directories,
+      description: `${settings.trustedDirs.description || 'Loaded from settings'} (including testspace)`
+    };
   }
 
-  return undefined;
+  // 如果没有其他配置，则至少信任testspace路径
+  return {
+    directories: [testspacePath],
+    recursive: true,
+    description: 'Auto-generated trusted directory for testspace'
+  };
 }
 
 // Simple console logger for now - replace with actual logger if available
